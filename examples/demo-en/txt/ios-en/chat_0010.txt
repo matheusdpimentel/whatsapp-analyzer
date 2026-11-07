@@ -1,0 +1,21 @@
+[1/7/26, 3:10:03 PM] Northwind Support group 10: ‎Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.
+[1/7/26, 3:10:03 PM] Northwind Support: Hello, your replacement part is ready for pickup.
+[1/7/26, 3:10:41 PM] Northwind Support: Could you send me the order number, please?
+[1/7/26, 3:10:58 PM] Northwind Support: Could you send me the order number, please?
+[1/7/26, 3:12:58 PM] Avery Lindqvist: 👍
+[1/7/26, 3:13:21 PM] Avery Lindqvist: ok
+[1/10/26, 3:07:04 PM] Avery Lindqvist: ‎<attached: 00000001-STICKER-2026-01-10-15-07-04.webp>
+[1/10/26, 3:08:07 PM] Avery Lindqvist: Can you call me after 5 pm?
+[1/10/26, 3:09:03 PM] Avery Lindqvist: yes
+[1/27/26, 9:12:21 AM] Jordan Okafor: Do you have the blue model in stock?
+[1/27/26, 9:21:21 AM] Northwind Support: Sorry about the delay. The package left our warehouse today.
+[1/27/26, 9:21:59 AM] Northwind Support: Sorry about the delay. The package left our warehouse today.
+[1/29/26, 5:06:00 AM] Northwind Support: Hi, we have an update on your support ticket.
+[1/29/26, 5:06:56 AM] Northwind Support: Thanks for letting us know. I'll look into it right away.
+[1/29/26, 5:08:47 AM] Northwind Support: Is there anything else I can help you with?
+[1/29/26, 5:33:47 AM] Avery Lindqvist: Great, thank you for the quick answer!
+[1/29/26, 5:35:18 AM] Avery Lindqvist: Can you call me after 5 pm?
+[1/29/26, 5:37:15 AM] Avery Lindqvist: thanks!
+[1/29/26, 12:37:15 PM] Northwind Support: The technician can visit on Thursday afternoon. Does that work?
+[1/29/26, 12:38:30 PM] Northwind Support: Could you send me the order number, please?
+[1/29/26, 1:03:30 PM] Robin Achebe: I received it, everything looks fine now.

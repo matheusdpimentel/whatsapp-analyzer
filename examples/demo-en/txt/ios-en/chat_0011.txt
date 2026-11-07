@@ -1,0 +1,22 @@
+[1/28/26, 6:00:00 PM] Robin Achebe: ‎Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.
+[1/28/26, 6:00:00 PM] Robin Achebe: Hello, my order still hasn't arrived.
+[1/28/26, 6:01:00 PM] Robin Achebe: Thank you for your message. We are away right now and will reply as soon as possible.
+[1/28/26, 6:03:00 PM] Northwind Support: Could you send me the order number, please?
+[1/28/26, 6:05:00 PM] Robin Achebe: Here are the details:
+- order 48213
+- two items
+12/03 works for the delivery, after 6 pm
+[1/28/26, 6:09:00 PM] Northwind Support: You can track it here: https://tracking.example.com/p/48213
+[1/28/26, 6:09:00 PM] Northwind Support: Is there anything else I can help you with?
+[1/28/26, 6:12:00 PM] Robin Achebe: Sure, call me at +1 555-0142 or write to alex@example.com
+[1/28/26, 6:14:00 PM] Robin Achebe: ‎<attached: 00000001-PHOTO-2026-01-28-18-14-00.jpg>
+[1/28/26, 6:15:00 PM] Robin Achebe: ‎<attached: 00000002-PHOTO-2026-01-28-18-15-00.jpg>
+Here is the photo of the label
+[1/28/26, 6:16:00 PM] Robin Achebe: ‎<attached: 00000003-AUDIO-2026-01-28-18-16-00.opus>
+[1/28/26, 6:17:00 PM] Robin Achebe: ‎<attached: 00000004-VIDEO-2026-01-28-18-17-00.mp4>
+[1/28/26, 6:18:00 PM] Robin Achebe: ‎<attached: 00000005-STICKER-2026-01-28-18-18-00.webp>
+[1/28/26, 6:19:00 PM] Robin Achebe: ‎<attached: 00000006-DOCUMENT-2026-01-28-18-19-00.pdf>
+[1/28/26, 6:21:00 PM] Robin Achebe: ‎This message was deleted.
+[1/28/26, 6:23:00 PM] Robin Achebe: 👍
+[1/28/26, 6:24:00 PM] Robin Achebe: The order number is 48213. Thursday works for me, thanks. I received it, everything looks fine now. It still shows as pending on the website. Can you call me after 5 pm? Great, thank you for the quick answer! The order number is 48213. Thursday works for me, thanks. I received it, everything looks fine now. It still shows as pending on the website. Can you call me after 5 pm? Great, thank you for the quick answer! The order number is 48213. Thursday works for me, thanks. I received it, everything looks fine now. It still shows as pending on the website. Can you call me after 5 pm? Great, thank you for the quick answer! The order number is 48213. Thursday works for me, thanks. I received it, everything looks fine now. It still shows as pending on the website. Can you call me after 5 pm? Great, thank you for the quick answer!
+[1/28/26, 6:30:00 PM] Northwind Support: ok

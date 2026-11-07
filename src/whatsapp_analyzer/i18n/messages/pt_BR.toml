@@ -69,3 +69,25 @@ none = "Nenhum instalado (as etapas com LLM são opcionais)"
 label = "Credenciais de provedores"
 value = "Definidas no ambiente: {names}"
 none = "Nenhuma chave de API de provedor encontrada no ambiente"
+
+[demo_data]
+help = "Gera um conjunto de dados sintético de demonstração: exportações TXT do WhatsApp, CSV e XLSX. Nenhum dado real é usado."
+done = "Conjunto de dados sintético gravado em {path}"
+summary = "{conversations} conversas, {messages} mensagens, {files} arquivos"
+notice = "Todos os nomes, telefones e mensagens são fictícios."
+
+[demo_data.arg]
+output_dir = "Diretório onde os dados serão gravados."
+
+[demo_data.option]
+conversations = "Número de conversas baseadas em perfis. Duas conversas de casos-limite são sempre incluídas."
+seed = "Semente aleatória. A mesma semente sempre gera os mesmos dados."
+locale = "Idioma das conversas geradas e dos formatos de exportação."
+platform = "Quais formatos de exportação do WhatsApp gravar."
+overwrite = "Grava em um diretório que não está vazio. Arquivos de um conjunto anterior listados no manifesto são substituídos; os demais são mantidos."
+
+[demo_data.error]
+not_empty = "O diretório '{path}' não está vazio."
+not_empty_hint = "Escolha um diretório vazio ou use --overwrite."
+not_a_directory = "'{path}' existe e não é um diretório."
+not_writable = "Não foi possível gravar os dados em '{path}': {reason}."

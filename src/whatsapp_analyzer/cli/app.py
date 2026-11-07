@@ -8,6 +8,7 @@ import typer
 
 from whatsapp_analyzer import __version__
 from whatsapp_analyzer.cli.argv import split_global_options
+from whatsapp_analyzer.cli.commands.demo_data import demo_data
 from whatsapp_analyzer.cli.commands.doctor import doctor
 from whatsapp_analyzer.cli.output import CliState, error_payload, print_error, write_json
 from whatsapp_analyzer.errors import AppError
@@ -71,6 +72,7 @@ def build_app() -> typer.Typer:
             raise typer.Exit(ExitCode.OK)
 
     app.command("doctor", help=t("doctor.help"))(doctor)
+    app.command("demo-data", help=t("demo_data.help"))(demo_data)
     return app
 
 

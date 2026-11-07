@@ -4,8 +4,9 @@ A local, terminal-based tool for processing, analyzing and classifying WhatsApp 
 exports. It computes deterministic engagement metrics and can optionally classify conversations
 with an LLM provider that you configure.
 
-> **Status: early development (milestone 0).** Only the project skeleton and the `doctor`
-> command exist so far. Architecture decisions are recorded in [`docs/adr/`](docs/adr/).
+> **Status: early development (milestone 1).** The CLI skeleton, the `doctor` command and the
+> synthetic data generator exist; importing and analyzing conversations come next. Architecture
+> decisions are recorded in [`docs/adr/`](docs/adr/).
 
 This project is not affiliated with, endorsed by, or sponsored by WhatsApp or Meta.
 
@@ -34,6 +35,20 @@ whatsapp-analyzer --lang pt-BR doctor     # Brazilian Portuguese interface
 Global options go before the command name. The interface language can also be set with the
 `WCA_LANG` environment variable (`en` or `pt-BR`).
 
+### Synthetic demo data
+
+You can try the tool without real conversations:
+
+```bash
+whatsapp-analyzer demo-data ./demo                              # English, Android and iOS exports
+whatsapp-analyzer demo-data ./demo-pt --locale pt-BR --seed 42  # Brazilian Portuguese
+```
+
+This writes WhatsApp chat exports (`txt/<format>/*.txt`), the same messages as CSV and XLSX,
+and a `manifest.json`. The same seed always produces the same files. All names, phone numbers
+(555-01XX) and addresses (example.com) are fictional. Ready-made datasets are in
+[`examples/`](examples/).
+
 ### Machine-readable output
 
 With `--json`, every command writes exactly one JSON document to stdout:
@@ -60,6 +75,7 @@ Failures add an `error` object with a stable English `code`, a localized `messag
 | 8 | Run finished with failed items |
 | 9 | Environment check failed |
 | 10 | Calibration required before a full LLM run |
+| 11 | Output could not be written (permissions, invalid path, full disk) |
 | 130 | Interrupted by the user |
 
 Codes 3 to 8 and 10 are reserved for commands that are not implemented yet.

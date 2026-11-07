@@ -1,0 +1,70 @@
+15/06/2025 19:31 - As mensagens e as chamadas são protegidas com a criptografia de ponta a ponta. Ninguém fora desta conversa, nem mesmo o WhatsApp, pode ler ou ouvi-las.
+15/06/2025 19:31 - Suporte Exemplo: Olá, temos uma atualização sobre o seu chamado.
+15/06/2025 22:31 - Marcos Peixoto: Quinta fica ótimo, obrigada.
+15/06/2025 22:32 - Marcos Peixoto: 👍
+15/06/2025 22:41 - Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+15/06/2025 22:41 - Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+15/06/2025 22:43 - Suporte Exemplo: Pode me enviar o número do pedido, por favor?
+10/07/2025 13:32 - Suporte Exemplo: Olá! Passando para saber do seu pedido recente.
+10/07/2025 13:33 - Suporte Exemplo: feito
+10/07/2025 13:33 - Suporte Exemplo: <Mídia oculta>
+10/07/2025 13:35 - Marcos Peixoto: <Mídia oculta>
+10/07/2025 13:37 - Marcos Peixoto: não
+10/07/2025 13:38 - Marcos Peixoto: O número do pedido é 48213.
+10/07/2025 20:38 - Suporte Exemplo: certo
+10/07/2025 20:39 - Suporte Exemplo: não
+10/07/2025 20:40 - Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+22/07/2025 14:28 - Suporte Exemplo: Olá! Passando para saber do seu pedido recente.
+22/07/2025 14:29 - Marcos Peixoto: O número do pedido é 48213.
+22/07/2025 14:30 - Marcos Peixoto: 👍
+22/07/2025 14:31 - Marcos Peixoto: Pode me ligar depois das 17h?
+22/07/2025 21:31 - Suporte Exemplo: Pode me enviar o número do pedido, por favor?
+22/07/2025 21:33 - Suporte Exemplo: obrigado!
+22/07/2025 21:33 - Suporte Exemplo: Posso ajudar com mais alguma coisa?
+22/07/2025 21:58 - Marcos Peixoto: Pode me ligar depois das 17h?
+22/07/2025 21:59 - Marcos Peixoto: Recebi, agora está tudo certo.
+22/07/2025 23:09 - Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+22/07/2025 23:10 - Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+22/07/2025 23:11 - Suporte Exemplo: Acabei de enviar a nota fiscal para o seu e-mail.
+23/07/2025 02:11 - Marcos Peixoto: Recebi, agora está tudo certo.
+23/07/2025 02:12 - Marcos Peixoto: O número do pedido é 48213.
+22/08/2025 08:19 - Suporte Exemplo: Olá! Passando para saber do seu pedido recente.
+22/08/2025 08:20 - Suporte Exemplo: Posso ajudar com mais alguma coisa?
+22/08/2025 08:20 - Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+22/08/2025 08:29 - Marcos Peixoto: 👍
+22/08/2025 08:29 - Marcos Peixoto: Perfeito, obrigado pela resposta rápida!
+22/08/2025 08:54 - Suporte Exemplo: certo
+22/08/2025 08:55 - Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+22/08/2025 08:55 - Suporte Exemplo: feito
+22/08/2025 11:55 - Marcos Peixoto: 👍
+22/08/2025 11:56 - Marcos Peixoto: ok
+22/08/2025 11:57 - Marcos Peixoto: certo
+22/08/2025 12:06 - Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+22/08/2025 12:15 - Marcos Peixoto: O número do pedido é 48213.
+22/08/2025 12:17 - Marcos Peixoto: 👍
+26/08/2025 12:43 - Suporte Exemplo: Olá, temos uma atualização sobre o seu chamado.
+26/08/2025 12:45 - Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+26/08/2025 15:45 - Marcos Peixoto: Pode me ligar depois das 17h?
+26/08/2025 16:10 - Suporte Exemplo: <Mídia oculta>
+26/08/2025 17:20 - Marcos Peixoto: Perfeito, obrigado pela resposta rápida!
+26/08/2025 17:45 - Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+26/08/2025 17:46 - Marcos Peixoto: Quinta fica ótimo, obrigada.
+26/08/2025 17:47 - Marcos Peixoto: Pode me ligar depois das 17h?
+27/08/2025 23:47 - Marcos Peixoto: Oi! Consigo mudar o endereço de entrega?
+27/08/2025 23:48 - Marcos Peixoto: Recebi, agora está tudo certo.
+27/08/2025 23:50 - Suporte Exemplo: Acabei de enviar a nota fiscal para o seu e-mail.
+28/08/2025 02:50 - Marcos Peixoto: Recebi, agora está tudo certo.
+25/09/2025 08:32 - Marcos Peixoto: Olá, meu pedido ainda não chegou.
+07/01/2026 05:29 - Marcos Peixoto: Boa tarde, preciso de uma segunda via do recibo.
+07/01/2026 05:29 - Marcos Peixoto: Pode me ligar depois das 17h?
+07/01/2026 05:30 - Marcos Peixoto: Perfeito, obrigado pela resposta rápida!
+07/01/2026 05:39 - Suporte Exemplo: certo
+17/01/2026 10:44 - Marcos Peixoto: Olá, meu pedido ainda não chegou.
+27/01/2026 20:20 - Suporte Exemplo: Oi, sua peça de reposição já está disponível para retirada.
+27/01/2026 21:30 - Marcos Peixoto: certo
+27/01/2026 21:31 - Marcos Peixoto: Perfeito, obrigado pela resposta rápida!
+27/01/2026 21:32 - Marcos Peixoto: 👍
+27/01/2026 21:36 - Suporte Exemplo: Posso ajudar com mais alguma coisa?
+27/01/2026 21:37 - Suporte Exemplo: <Mídia oculta>
+27/01/2026 21:38 - Suporte Exemplo: Acabei de enviar a nota fiscal para o seu e-mail.
+27/01/2026 22:03 - Marcos Peixoto: ok

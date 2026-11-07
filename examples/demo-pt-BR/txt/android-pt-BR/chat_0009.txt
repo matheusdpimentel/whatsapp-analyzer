@@ -1,0 +1,14 @@
+29/07/2025 21:19 - As mensagens e as chamadas são protegidas com a criptografia de ponta a ponta. Ninguém fora desta conversa, nem mesmo o WhatsApp, pode ler ou ouvi-las.
+29/07/2025 21:19 - Suporte Exemplo: Olá! Passando para saber do seu pedido recente.
+29/07/2025 21:21 - Suporte Exemplo: não
+29/07/2025 21:22 - Suporte Exemplo: Acabei de enviar a nota fiscal para o seu e-mail.
+15/08/2025 06:48 - Suporte Exemplo: Olá! Passando para saber do seu pedido recente.
+15/08/2025 06:50 - Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+14/11/2025 13:30 - Suporte Exemplo: Bom dia! Ainda precisa de ajuda com a instalação?
+14/11/2025 13:32 - Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+14/11/2025 13:33 - Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+15/11/2025 19:33 - Suporte Exemplo: Oi, sua peça de reposição já está disponível para retirada.
+15/11/2025 19:33 - Suporte Exemplo: Acabei de enviar a nota fiscal para o seu e-mail.
+15/11/2025 19:33 - Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+23/11/2025 03:26 - Suporte Exemplo: Oi, sua peça de reposição já está disponível para retirada.
+23/11/2025 03:26 - Suporte Exemplo: não

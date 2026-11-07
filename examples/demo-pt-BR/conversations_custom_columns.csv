@@ -1,0 +1,334 @@
+chat_id,sent_at,author,from_me,body,kind
+chat_0001,15/07/2025 06:04:30,Marcos Peixoto,false,Oi! Consigo mudar o endereço de entrega?,text
+chat_0001,15/07/2025 06:06:21,Marcos Peixoto,false,O número do pedido é 48213.,text
+chat_0001,15/07/2025 09:06:21,Suporte Exemplo,true,não,text
+chat_0001,15/07/2025 09:08:04,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0001,15/07/2025 09:12:04,Marcos Peixoto,false,obrigado!,text
+chat_0001,15/07/2025 09:13:46,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0001,15/07/2025 09:15:34,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0001,15/07/2025 09:17:34,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0001,15/07/2025 09:18:59,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0001,15/07/2025 09:20:33,Suporte Exemplo,true,feito,text
+chat_0001,15/07/2025 10:30:33,Marcos Peixoto,false,No site ainda aparece como pendente.,text
+chat_0001,15/07/2025 10:30:47,Marcos Peixoto,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0001,20/07/2025 01:29:41,Marcos Peixoto,false,O aparelho parou de carregar hoje de manhã.,text
+chat_0001,20/07/2025 01:30:30,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0001,20/07/2025 01:34:30,Suporte Exemplo,true,feito,text
+chat_0001,20/07/2025 08:34:30,Marcos Peixoto,false,O número do pedido é 48213.,text
+chat_0001,20/07/2025 08:34:43,Marcos Peixoto,false,ok,text
+chat_0001,20/07/2025 08:36:39,Marcos Peixoto,false,O número do pedido é 48213.,text
+chat_0001,20/07/2025 08:38:39,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0001,22/09/2025 16:18:28,Suporte Exemplo,true,"Olá, temos uma atualização sobre o seu chamado.",text
+chat_0001,22/09/2025 23:18:28,Marcos Peixoto,false,O número do pedido é 48213.,text
+chat_0001,23/09/2025 02:18:28,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0001,23/09/2025 02:19:35,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0001,23/09/2025 02:21:35,Marcos Peixoto,false,No site ainda aparece como pendente.,text
+chat_0001,03/10/2025 00:02:34,Marcos Peixoto,false,"Olá, meu pedido ainda não chegou.",text
+chat_0001,03/10/2025 00:03:26,Marcos Peixoto,false,Segue a foto da etiqueta,media
+chat_0001,03/10/2025 00:04:43,Marcos Peixoto,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0001,03/10/2025 00:06:43,Suporte Exemplo,true,feito,text
+chat_0001,03/10/2025 00:07:12,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0001,03/10/2025 00:16:12,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0001,03/10/2025 03:16:12,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0001,03/10/2025 03:17:02,Suporte Exemplo,true,,media
+chat_0001,03/10/2025 04:27:02,Marcos Peixoto,false,,media
+chat_0001,03/10/2025 04:28:37,Marcos Peixoto,false,,media
+chat_0001,03/10/2025 04:29:10,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0001,25/10/2025 05:21:53,Marcos Peixoto,false,Vocês têm o modelo azul em estoque?,text
+chat_0001,25/10/2025 05:23:22,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0001,25/10/2025 05:48:22,Suporte Exemplo,true,Segue a foto da etiqueta,media
+chat_0001,25/10/2025 05:49:36,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0001,25/10/2025 06:14:36,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0001,25/10/2025 06:15:40,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0001,25/10/2025 06:17:25,Marcos Peixoto,false,Pode me ligar depois das 17h?,text
+chat_0001,19/12/2025 06:44:44,Marcos Peixoto,false,"Olá, meu pedido ainda não chegou.",text
+chat_0001,19/12/2025 06:45:46,Marcos Peixoto,false,👍,text
+chat_0001,19/12/2025 07:10:46,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0001,08/01/2026 10:01:03,Suporte Exemplo,true,"Olá, temos uma atualização sobre o seu chamado.",text
+chat_0001,08/01/2026 10:01:47,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0001,08/01/2026 10:02:07,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0001,08/01/2026 10:03:07,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0001,08/01/2026 10:03:39,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0001,08/01/2026 10:05:20,Marcos Peixoto,false,No site ainda aparece como pendente.,text
+chat_0001,08/01/2026 10:30:20,Suporte Exemplo,true,👍,text
+chat_0001,08/01/2026 10:32:06,Suporte Exemplo,true,ok,text
+chat_0001,08/01/2026 10:33:23,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0001,08/01/2026 10:42:23,Marcos Peixoto,false,O número do pedido é 48213.,text
+chat_0001,08/01/2026 11:07:23,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0001,08/01/2026 11:08:45,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0001,08/01/2026 11:09:47,Suporte Exemplo,true,certo,text
+chat_0001,29/01/2026 22:42:00,Suporte Exemplo,true,Olá! Passando para saber do seu pedido recente.,text
+chat_0001,29/01/2026 22:42:20,Suporte Exemplo,true,sim,text
+chat_0001,29/01/2026 22:44:19,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0001,29/01/2026 22:46:19,Marcos Peixoto,false,No site ainda aparece como pendente.,text
+chat_0001,30/01/2026 01:46:19,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0001,30/01/2026 01:47:43,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0001,30/01/2026 01:49:26,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0001,30/01/2026 01:53:26,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0001,30/01/2026 01:53:49,Marcos Peixoto,false,No site ainda aparece como pendente.,text
+chat_0001,30/01/2026 01:54:42,Marcos Peixoto,false,No site ainda aparece como pendente.,text
+chat_0001,30/01/2026 02:19:42,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0001,30/01/2026 02:23:42,Marcos Peixoto,false,No site ainda aparece como pendente.,text
+chat_0001,30/01/2026 02:23:49,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0001,30/01/2026 02:24:36,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0002,14/08/2025 21:32:05,Suporte Exemplo,true,Olá! Passando para saber do seu pedido recente.,text
+chat_0002,14/08/2025 21:33:49,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0002,14/08/2025 21:35:14,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0002,14/08/2025 21:37:14,Bruno Tavares,false,"Quinta fica ótimo, obrigada.",text
+chat_0002,14/08/2025 21:38:30,Bruno Tavares,false,No site ainda aparece como pendente.,text
+chat_0002,14/08/2025 21:38:58,Bruno Tavares,false,feito,text
+chat_0002,14/08/2025 22:03:58,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0002,03/09/2025 00:18:07,Suporte Exemplo,true,"Olá, temos uma atualização sobre o seu chamado.",text
+chat_0002,03/09/2025 00:19:47,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0002,03/09/2025 00:20:50,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0002,03/09/2025 01:30:50,Bruno Tavares,false,"Quinta fica ótimo, obrigada.",text
+chat_0002,03/09/2025 01:55:50,Suporte Exemplo,true,Segue a foto da etiqueta,media
+chat_0002,23/10/2025 15:57:25,Suporte Exemplo,true,"Oi, sua peça de reposição já está disponível para retirada.",text
+chat_0002,16/12/2025 05:03:00,Suporte Exemplo,true,"Olá, temos uma atualização sobre o seu chamado.",text
+chat_0002,16/12/2025 05:03:22,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0002,16/12/2025 05:04:02,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0002,16/12/2025 05:13:02,Bruno Tavares,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0003,30/08/2025 06:08:09,Suporte Exemplo,true,Olá! Passando para saber do seu pedido recente.,text
+chat_0003,30/08/2025 06:08:24,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0003,02/11/2025 07:45:56,Suporte Exemplo,true,"Oi, sua peça de reposição já está disponível para retirada.",text
+chat_0003,02/11/2025 07:46:40,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0003,28/11/2025 22:15:25,Suporte Exemplo,true,Bom dia! Ainda precisa de ajuda com a instalação?,text
+chat_0003,28/11/2025 22:15:34,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0003,10/01/2026 00:55:00,Suporte Exemplo,true,"Olá, temos uma atualização sobre o seu chamado.",text
+chat_0004,22/02/2025 19:23:57,Felipe Arruda,false,"Olá, meu pedido ainda não chegou.",text
+chat_0004,22/02/2025 19:25:13,Felipe Arruda,false,O número do pedido é 48213.,text
+chat_0004,22/02/2025 19:27:00,Felipe Arruda,false,Pode me ligar depois das 17h?,text
+chat_0004,22/02/2025 19:28:00,Suporte Exemplo,true,👍,text
+chat_0004,22/02/2025 19:28:37,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0004,22/02/2025 19:29:21,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0004,22/02/2025 19:33:21,Felipe Arruda,false,ok,text
+chat_0004,22/02/2025 19:34:04,Felipe Arruda,false,No site ainda aparece como pendente.,text
+chat_0004,24/02/2025 01:34:04,Suporte Exemplo,true,"Oi, sua peça de reposição já está disponível para retirada.",text
+chat_0004,24/02/2025 02:44:04,Felipe Arruda,false,No site ainda aparece como pendente.,text
+chat_0004,24/02/2025 02:44:59,Felipe Arruda,false,O número do pedido é 48213.,text
+chat_0004,24/02/2025 03:54:59,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0004,24/02/2025 03:55:22,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0004,11/06/2025 05:19:00,Suporte Exemplo,true,,media
+chat_0005,19/01/2026 03:05:00,Suporte Exemplo,true,Bom dia! Ainda precisa de ajuda com a instalação?,text
+chat_0005,19/01/2026 03:06:02,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0005,19/01/2026 10:06:02,Gabriela Nunes,false,"Quinta fica ótimo, obrigada.",text
+chat_0005,19/01/2026 10:06:37,Gabriela Nunes,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0006,30/01/2026 21:32:00,Larissa Teles,false,O aparelho parou de carregar hoje de manhã.,text
+chat_0006,30/01/2026 21:33:22,Larissa Teles,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0006,30/01/2026 21:34:20,Larissa Teles,false,Pode me ligar depois das 17h?,text
+chat_0006,30/01/2026 21:36:20,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0006,30/01/2026 21:36:52,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0006,30/01/2026 21:37:26,Suporte Exemplo,true,não,text
+chat_0006,30/01/2026 21:38:26,Larissa Teles,false,certo,text
+chat_0006,30/01/2026 21:39:58,Larissa Teles,false,obrigado!,text
+chat_0006,30/01/2026 21:41:56,Larissa Teles,false,O número do pedido é 48213.,text
+chat_0006,30/01/2026 21:42:56,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0006,30/01/2026 21:44:56,Larissa Teles,false,"Quinta fica ótimo, obrigada.",text
+chat_0006,30/01/2026 21:49:56,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0006,30/01/2026 21:50:34,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0006,30/01/2026 21:52:30,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0006,30/01/2026 21:54:30,Larissa Teles,false,,media
+chat_0006,30/01/2026 21:55:34,Larissa Teles,false,"Recebi, agora está tudo certo.",text
+chat_0006,30/01/2026 21:58:34,Suporte Exemplo,true,sim,text
+chat_0006,30/01/2026 21:59:10,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0006,30/01/2026 22:01:03,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0006,30/01/2026 22:02:03,Larissa Teles,false,,media
+chat_0006,30/01/2026 22:02:25,Larissa Teles,false,,media
+chat_0006,30/01/2026 22:03:25,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0006,30/01/2026 22:08:25,Larissa Teles,false,Pode me ligar depois das 17h?,text
+chat_0006,30/01/2026 22:08:41,Larissa Teles,false,No site ainda aparece como pendente.,text
+chat_0006,30/01/2026 22:09:25,Larissa Teles,false,"Recebi, agora está tudo certo.",text
+chat_0006,30/01/2026 22:12:25,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0006,30/01/2026 22:13:46,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0006,30/01/2026 22:14:46,Larissa Teles,false,certo,text
+chat_0006,30/01/2026 22:15:46,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0006,30/01/2026 22:18:46,Larissa Teles,false,No site ainda aparece como pendente.,text
+chat_0006,30/01/2026 22:18:54,Larissa Teles,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0006,30/01/2026 22:21:54,Suporte Exemplo,true,ok,text
+chat_0006,30/01/2026 22:24:54,Larissa Teles,false,No site ainda aparece como pendente.,text
+chat_0006,30/01/2026 22:29:54,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0006,30/01/2026 22:31:02,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0006,30/01/2026 22:32:41,Suporte Exemplo,true,sim,text
+chat_0006,30/01/2026 22:33:41,Larissa Teles,false,"Recebi, agora está tudo certo.",text
+chat_0006,30/01/2026 22:35:16,Larissa Teles,false,obrigado!,text
+chat_0006,30/01/2026 22:36:29,Larissa Teles,false,feito,text
+chat_0006,30/01/2026 22:37:29,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0006,30/01/2026 22:42:29,Larissa Teles,false,👍,text
+chat_0006,30/01/2026 22:43:19,Larissa Teles,false,"Quinta fica ótimo, obrigada.",text
+chat_0006,30/01/2026 22:46:19,Suporte Exemplo,true,obrigado!,text
+chat_0006,30/01/2026 22:48:19,Larissa Teles,false,certo,text
+chat_0006,30/01/2026 22:50:17,Larissa Teles,false,obrigado!,text
+chat_0006,30/01/2026 22:50:44,Larissa Teles,false,No site ainda aparece como pendente.,text
+chat_0006,30/01/2026 22:52:44,Suporte Exemplo,true,feito,text
+chat_0006,30/01/2026 22:53:34,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0006,30/01/2026 22:53:51,Suporte Exemplo,true,,media
+chat_0006,30/01/2026 22:54:51,Larissa Teles,false,No site ainda aparece como pendente.,text
+chat_0006,30/01/2026 22:56:14,Larissa Teles,false,,media
+chat_0006,30/01/2026 22:56:32,Larissa Teles,false,Segue a foto da etiqueta,media
+chat_0006,30/01/2026 22:58:32,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0006,30/01/2026 22:59:32,Larissa Teles,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0006,30/01/2026 23:00:05,Larissa Teles,false,Segue a foto da etiqueta,media
+chat_0006,30/01/2026 23:00:48,Larissa Teles,false,obrigado!,text
+chat_0006,30/01/2026 23:02:48,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0006,30/01/2026 23:03:45,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0006,30/01/2026 23:05:45,Larissa Teles,false,"Quinta fica ótimo, obrigada.",text
+chat_0006,30/01/2026 23:08:45,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0006,30/01/2026 23:09:39,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0007,28/10/2025 02:39:32,Suporte Exemplo,true,Bom dia! Ainda precisa de ajuda com a instalação?,text
+chat_0007,28/10/2025 02:40:33,Suporte Exemplo,true,ok,text
+chat_0007,28/10/2025 03:05:33,João Vasconcelos,false,"Recebi, agora está tudo certo.",text
+chat_0007,28/10/2025 03:06:23,João Vasconcelos,false,Pode me ligar depois das 17h?,text
+chat_0007,28/10/2025 03:07:23,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0007,28/10/2025 03:09:19,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0007,28/10/2025 06:09:19,João Vasconcelos,false,Pode me ligar depois das 17h?,text
+chat_0007,28/10/2025 06:10:02,João Vasconcelos,false,sim,text
+chat_0007,28/10/2025 06:10:57,João Vasconcelos,false,O número do pedido é 48213.,text
+chat_0007,21/12/2025 18:49:08,Suporte Exemplo,true,"Olá, temos uma atualização sobre o seu chamado.",text
+chat_0007,21/12/2025 21:49:08,Felipe Arruda,false,No site ainda aparece como pendente.,text
+chat_0007,21/12/2025 21:51:08,Suporte Exemplo,true,obrigado!,text
+chat_0007,21/12/2025 21:52:34,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0007,21/12/2025 21:52:49,Suporte Exemplo,true,certo,text
+chat_0007,21/12/2025 21:54:49,Felipe Arruda,false,Pode me ligar depois das 17h?,text
+chat_0007,21/12/2025 21:56:24,Felipe Arruda,false,obrigado!,text
+chat_0007,21/12/2025 21:57:42,Felipe Arruda,false,O número do pedido é 48213.,text
+chat_0007,21/12/2025 21:58:42,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0007,21/12/2025 21:59:13,Suporte Exemplo,true,,media
+chat_0007,21/12/2025 22:00:32,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0007,22/12/2025 05:00:32,Elisa Prado,false,No site ainda aparece como pendente.,text
+chat_0007,31/12/2025 23:29:00,Suporte Exemplo,true,Bom dia! Ainda precisa de ajuda com a instalação?,text
+chat_0007,31/12/2025 23:29:37,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0007,31/12/2025 23:29:52,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0007,01/01/2026 00:39:52,João Vasconcelos,false,ok,text
+chat_0007,01/01/2026 00:40:49,João Vasconcelos,false,Pode me ligar depois das 17h?,text
+chat_0007,01/01/2026 00:49:49,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0007,01/01/2026 01:59:49,João Vasconcelos,false,Pode me ligar depois das 17h?,text
+chat_0007,01/01/2026 03:09:49,Suporte Exemplo,true,não,text
+chat_0007,01/01/2026 03:10:12,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0007,01/01/2026 03:12:00,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0007,01/01/2026 03:37:00,Elisa Prado,false,Pode me ligar depois das 17h?,text
+chat_0007,01/01/2026 03:37:33,Elisa Prado,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0008,15/06/2025 19:31:24,Suporte Exemplo,true,"Olá, temos uma atualização sobre o seu chamado.",text
+chat_0008,15/06/2025 22:31:24,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0008,15/06/2025 22:32:11,Marcos Peixoto,false,👍,text
+chat_0008,15/06/2025 22:41:11,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0008,15/06/2025 22:41:55,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0008,15/06/2025 22:43:31,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0008,10/07/2025 13:32:06,Suporte Exemplo,true,Olá! Passando para saber do seu pedido recente.,text
+chat_0008,10/07/2025 13:33:52,Suporte Exemplo,true,feito,text
+chat_0008,10/07/2025 13:33:58,Suporte Exemplo,true,,media
+chat_0008,10/07/2025 13:35:58,Marcos Peixoto,false,,media
+chat_0008,10/07/2025 13:37:47,Marcos Peixoto,false,não,text
+chat_0008,10/07/2025 13:38:11,Marcos Peixoto,false,O número do pedido é 48213.,text
+chat_0008,10/07/2025 20:38:11,Suporte Exemplo,true,certo,text
+chat_0008,10/07/2025 20:39:50,Suporte Exemplo,true,não,text
+chat_0008,10/07/2025 20:40:01,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0008,22/07/2025 14:28:00,Suporte Exemplo,true,Olá! Passando para saber do seu pedido recente.,text
+chat_0008,22/07/2025 14:29:00,Marcos Peixoto,false,O número do pedido é 48213.,text
+chat_0008,22/07/2025 14:30:43,Marcos Peixoto,false,👍,text
+chat_0008,22/07/2025 14:31:31,Marcos Peixoto,false,Pode me ligar depois das 17h?,text
+chat_0008,22/07/2025 21:31:31,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0008,22/07/2025 21:33:09,Suporte Exemplo,true,obrigado!,text
+chat_0008,22/07/2025 21:33:32,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0008,22/07/2025 21:58:32,Marcos Peixoto,false,Pode me ligar depois das 17h?,text
+chat_0008,22/07/2025 21:59:53,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0008,22/07/2025 23:09:53,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0008,22/07/2025 23:10:02,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0008,22/07/2025 23:11:46,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0008,23/07/2025 02:11:46,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0008,23/07/2025 02:12:21,Marcos Peixoto,false,O número do pedido é 48213.,text
+chat_0008,22/08/2025 08:19:11,Suporte Exemplo,true,Olá! Passando para saber do seu pedido recente.,text
+chat_0008,22/08/2025 08:20:19,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0008,22/08/2025 08:20:40,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0008,22/08/2025 08:29:40,Marcos Peixoto,false,👍,text
+chat_0008,22/08/2025 08:29:48,Marcos Peixoto,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0008,22/08/2025 08:54:48,Suporte Exemplo,true,certo,text
+chat_0008,22/08/2025 08:55:00,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0008,22/08/2025 08:55:24,Suporte Exemplo,true,feito,text
+chat_0008,22/08/2025 11:55:24,Marcos Peixoto,false,👍,text
+chat_0008,22/08/2025 11:56:50,Marcos Peixoto,false,ok,text
+chat_0008,22/08/2025 11:57:49,Marcos Peixoto,false,certo,text
+chat_0008,22/08/2025 12:06:49,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0008,22/08/2025 12:15:49,Marcos Peixoto,false,O número do pedido é 48213.,text
+chat_0008,22/08/2025 12:17:14,Marcos Peixoto,false,👍,text
+chat_0008,26/08/2025 12:43:32,Suporte Exemplo,true,"Olá, temos uma atualização sobre o seu chamado.",text
+chat_0008,26/08/2025 12:45:25,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0008,26/08/2025 15:45:25,Marcos Peixoto,false,Pode me ligar depois das 17h?,text
+chat_0008,26/08/2025 16:10:25,Suporte Exemplo,true,,media
+chat_0008,26/08/2025 17:20:25,Marcos Peixoto,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0008,26/08/2025 17:45:25,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0008,26/08/2025 17:46:25,Marcos Peixoto,false,"Quinta fica ótimo, obrigada.",text
+chat_0008,26/08/2025 17:47:22,Marcos Peixoto,false,Pode me ligar depois das 17h?,text
+chat_0008,27/08/2025 23:47:22,Marcos Peixoto,false,Oi! Consigo mudar o endereço de entrega?,text
+chat_0008,27/08/2025 23:48:17,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0008,27/08/2025 23:50:17,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0008,28/08/2025 02:50:17,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0008,25/09/2025 08:32:00,Marcos Peixoto,false,"Olá, meu pedido ainda não chegou.",text
+chat_0008,07/01/2026 05:29:07,Marcos Peixoto,false,"Boa tarde, preciso de uma segunda via do recibo.",text
+chat_0008,07/01/2026 05:29:14,Marcos Peixoto,false,Pode me ligar depois das 17h?,text
+chat_0008,07/01/2026 05:30:11,Marcos Peixoto,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0008,07/01/2026 05:39:11,Suporte Exemplo,true,certo,text
+chat_0008,17/01/2026 10:44:50,Marcos Peixoto,false,"Olá, meu pedido ainda não chegou.",text
+chat_0008,27/01/2026 20:20:00,Suporte Exemplo,true,"Oi, sua peça de reposição já está disponível para retirada.",text
+chat_0008,27/01/2026 21:30:00,Marcos Peixoto,false,certo,text
+chat_0008,27/01/2026 21:31:15,Marcos Peixoto,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0008,27/01/2026 21:32:40,Marcos Peixoto,false,👍,text
+chat_0008,27/01/2026 21:36:40,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0008,27/01/2026 21:37:22,Suporte Exemplo,true,,media
+chat_0008,27/01/2026 21:38:46,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0008,27/01/2026 22:03:46,Marcos Peixoto,false,ok,text
+chat_0009,29/07/2025 21:19:31,Suporte Exemplo,true,Olá! Passando para saber do seu pedido recente.,text
+chat_0009,29/07/2025 21:21:30,Suporte Exemplo,true,não,text
+chat_0009,29/07/2025 21:22:39,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0009,15/08/2025 06:48:55,Suporte Exemplo,true,Olá! Passando para saber do seu pedido recente.,text
+chat_0009,15/08/2025 06:50:41,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0009,14/11/2025 13:30:57,Suporte Exemplo,true,Bom dia! Ainda precisa de ajuda com a instalação?,text
+chat_0009,14/11/2025 13:32:17,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0009,14/11/2025 13:33:03,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0009,15/11/2025 19:33:03,Suporte Exemplo,true,"Oi, sua peça de reposição já está disponível para retirada.",text
+chat_0009,15/11/2025 19:33:21,Suporte Exemplo,true,Acabei de enviar a nota fiscal para o seu e-mail.,text
+chat_0009,15/11/2025 19:33:39,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0009,23/11/2025 03:26:00,Suporte Exemplo,true,"Oi, sua peça de reposição já está disponível para retirada.",text
+chat_0009,23/11/2025 03:26:50,Suporte Exemplo,true,não,text
+chat_0010,07/01/2026 15:10:03,Suporte Exemplo,true,"Oi, sua peça de reposição já está disponível para retirada.",text
+chat_0010,07/01/2026 15:10:41,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0010,07/01/2026 15:10:58,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0010,07/01/2026 15:12:58,Heitor Campos,false,👍,text
+chat_0010,07/01/2026 15:13:21,Heitor Campos,false,ok,text
+chat_0010,10/01/2026 15:07:04,Heitor Campos,false,,media
+chat_0010,10/01/2026 15:08:07,Heitor Campos,false,Pode me ligar depois das 17h?,text
+chat_0010,10/01/2026 15:09:03,Heitor Campos,false,sim,text
+chat_0010,27/01/2026 09:12:21,Gabriela Nunes,false,Vocês têm o modelo azul em estoque?,text
+chat_0010,27/01/2026 09:21:21,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0010,27/01/2026 09:21:59,Suporte Exemplo,true,Desculpe a demora. O pacote saiu do nosso estoque hoje.,text
+chat_0010,29/01/2026 05:06:00,Suporte Exemplo,true,"Olá, temos uma atualização sobre o seu chamado.",text
+chat_0010,29/01/2026 05:06:56,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text
+chat_0010,29/01/2026 05:08:47,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0010,29/01/2026 05:33:47,Heitor Campos,false,"Perfeito, obrigado pela resposta rápida!",text
+chat_0010,29/01/2026 05:35:18,Heitor Campos,false,Pode me ligar depois das 17h?,text
+chat_0010,29/01/2026 05:37:15,Heitor Campos,false,obrigado!,text
+chat_0010,29/01/2026 12:37:15,Suporte Exemplo,true,O técnico pode ir na quinta à tarde. Fica bom para você?,text
+chat_0010,29/01/2026 12:38:30,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0010,29/01/2026 13:03:30,Marcos Peixoto,false,"Recebi, agora está tudo certo.",text
+chat_0011,28/01/2026 18:00:00,Marcos Peixoto,false,"Olá, meu pedido ainda não chegou.",text
+chat_0011,28/01/2026 18:01:00,Marcos Peixoto,false,Agradecemos o seu contato. No momento não estamos disponíveis e responderemos assim que possível.,text
+chat_0011,28/01/2026 18:03:00,Suporte Exemplo,true,"Pode me enviar o número do pedido, por favor?",text
+chat_0011,28/01/2026 18:05:00,Marcos Peixoto,false,"Seguem os dados:
+- pedido 48213
+- dois itens
+12/03 serve para a entrega, depois das 18h",text
+chat_0011,28/01/2026 18:09:00,Suporte Exemplo,true,Você pode acompanhar aqui: https://rastreio.example.com/p/48213,text
+chat_0011,28/01/2026 18:09:00,Suporte Exemplo,true,Posso ajudar com mais alguma coisa?,text
+chat_0011,28/01/2026 18:12:00,Marcos Peixoto,false,"Claro, me liga no +1 555-0142 ou escreve para ana@example.org",text
+chat_0011,28/01/2026 18:14:00,Marcos Peixoto,false,,media
+chat_0011,28/01/2026 18:15:00,Marcos Peixoto,false,Segue a foto da etiqueta,media
+chat_0011,28/01/2026 18:16:00,Marcos Peixoto,false,,media
+chat_0011,28/01/2026 18:17:00,Marcos Peixoto,false,,media
+chat_0011,28/01/2026 18:18:00,Marcos Peixoto,false,,media
+chat_0011,28/01/2026 18:19:00,Marcos Peixoto,false,,media
+chat_0011,28/01/2026 18:21:00,Marcos Peixoto,false,,deleted
+chat_0011,28/01/2026 18:23:00,Marcos Peixoto,false,👍,text
+chat_0011,28/01/2026 18:24:00,Marcos Peixoto,false,"O número do pedido é 48213. Quinta fica ótimo, obrigada. Recebi, agora está tudo certo. No site ainda aparece como pendente. Pode me ligar depois das 17h? Perfeito, obrigado pela resposta rápida! O número do pedido é 48213. Quinta fica ótimo, obrigada. Recebi, agora está tudo certo. No site ainda aparece como pendente. Pode me ligar depois das 17h? Perfeito, obrigado pela resposta rápida! O número do pedido é 48213. Quinta fica ótimo, obrigada. Recebi, agora está tudo certo. No site ainda aparece como pendente. Pode me ligar depois das 17h? Perfeito, obrigado pela resposta rápida! O número do pedido é 48213. Quinta fica ótimo, obrigada. Recebi, agora está tudo certo. No site ainda aparece como pendente. Pode me ligar depois das 17h? Perfeito, obrigado pela resposta rápida!",text
+chat_0011,28/01/2026 18:30:00,Suporte Exemplo,true,ok,text
+chat_0012,02/11/2025 09:30:00,Suporte Exemplo,true,Olá! Passando para saber do seu pedido recente.,text
+chat_0012,05/11/2025 09:30:00,Larissa Teles,false,O número do pedido é 48213.,text
+chat_0012,11/11/2025 09:30:00,Suporte Exemplo,true,Obrigado por avisar. Vou verificar agora mesmo.,text

@@ -1,0 +1,123 @@
+{
+  "generator_version": 1,
+  "synthetic": true,
+  "seed": 7,
+  "locale": "en",
+  "end": "2026-01-31T18:00:00",
+  "conversations": [
+    {
+      "id": "chat_0001",
+      "title": "Robin Achebe",
+      "profile": "engaged",
+      "participants": 1,
+      "messages": 72
+    },
+    {
+      "id": "chat_0002",
+      "title": "Jamie Chen",
+      "profile": "responsive",
+      "participants": 1,
+      "messages": 17
+    },
+    {
+      "id": "chat_0003",
+      "title": "Riley Novak",
+      "profile": "one_sided",
+      "participants": 1,
+      "messages": 7
+    },
+    {
+      "id": "chat_0004",
+      "title": "Casey Duarte",
+      "profile": "dormant",
+      "participants": 1,
+      "messages": 14
+    },
+    {
+      "id": "chat_0005",
+      "title": "Jordan Okafor",
+      "profile": "new_contact",
+      "participants": 1,
+      "messages": 4
+    },
+    {
+      "id": "chat_0006",
+      "title": "Drew Kowalski",
+      "profile": "burst",
+      "participants": 1,
+      "messages": 61
+    },
+    {
+      "id": "chat_0007",
+      "title": "Northwind Support group 7",
+      "profile": "group",
+      "participants": 3,
+      "messages": 33
+    },
+    {
+      "id": "chat_0008",
+      "title": "Robin Achebe",
+      "profile": "engaged",
+      "participants": 1,
+      "messages": 69
+    },
+    {
+      "id": "chat_0009",
+      "title": "Alex Rivera",
+      "profile": "one_sided",
+      "participants": 1,
+      "messages": 13
+    },
+    {
+      "id": "chat_0010",
+      "title": "Northwind Support group 10",
+      "profile": "group",
+      "participants": 3,
+      "messages": 20
+    },
+    {
+      "id": "chat_0011",
+      "title": "Robin Achebe",
+      "profile": "edge_cases",
+      "participants": 1,
+      "messages": 17
+    },
+    {
+      "id": "chat_0012",
+      "title": "Drew Kowalski",
+      "profile": "ambiguous_dates",
+      "participants": 1,
+      "messages": 3
+    }
+  ],
+  "files": [
+    "conversations.csv",
+    "conversations.xlsx",
+    "conversations_custom_columns.csv",
+    "manifest.json",
+    "txt/android-en/chat_0001.txt",
+    "txt/android-en/chat_0002.txt",
+    "txt/android-en/chat_0003.txt",
+    "txt/android-en/chat_0004.txt",
+    "txt/android-en/chat_0005.txt",
+    "txt/android-en/chat_0006.txt",
+    "txt/android-en/chat_0007.txt",
+    "txt/android-en/chat_0008.txt",
+    "txt/android-en/chat_0009.txt",
+    "txt/android-en/chat_0010.txt",
+    "txt/android-en/chat_0011.txt",
+    "txt/android-en/chat_0012.txt",
+    "txt/ios-en/chat_0001.txt",
+    "txt/ios-en/chat_0002.txt",
+    "txt/ios-en/chat_0003.txt",
+    "txt/ios-en/chat_0004.txt",
+    "txt/ios-en/chat_0005.txt",
+    "txt/ios-en/chat_0006.txt",
+    "txt/ios-en/chat_0007.txt",
+    "txt/ios-en/chat_0008.txt",
+    "txt/ios-en/chat_0009.txt",
+    "txt/ios-en/chat_0010.txt",
+    "txt/ios-en/chat_0011.txt",
+    "txt/ios-en/chat_0012.txt"
+  ]
+}

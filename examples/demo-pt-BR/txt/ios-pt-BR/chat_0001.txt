@@ -1,0 +1,75 @@
+[15/07/2025, 06:04:30] Marcos Peixoto: ‎As mensagens e as chamadas são protegidas com a criptografia de ponta a ponta. Ninguém fora desta conversa, nem mesmo o WhatsApp, pode ler ou ouvi-las.
+[15/07/2025, 06:04:30] Marcos Peixoto: Oi! Consigo mudar o endereço de entrega?
+[15/07/2025, 06:06:21] Marcos Peixoto: O número do pedido é 48213.
+[15/07/2025, 09:06:21] Suporte Exemplo: não
+[15/07/2025, 09:08:04] Suporte Exemplo: Posso ajudar com mais alguma coisa?
+[15/07/2025, 09:12:04] Marcos Peixoto: obrigado!
+[15/07/2025, 09:13:46] Marcos Peixoto: Quinta fica ótimo, obrigada.
+[15/07/2025, 09:15:34] Marcos Peixoto: Recebi, agora está tudo certo.
+[15/07/2025, 09:17:34] Suporte Exemplo: Pode me enviar o número do pedido, por favor?
+[15/07/2025, 09:18:59] Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+[15/07/2025, 09:20:33] Suporte Exemplo: feito
+[15/07/2025, 10:30:33] Marcos Peixoto: No site ainda aparece como pendente.
+[15/07/2025, 10:30:47] Marcos Peixoto: Perfeito, obrigado pela resposta rápida!
+[20/07/2025, 01:29:41] Marcos Peixoto: O aparelho parou de carregar hoje de manhã.
+[20/07/2025, 01:30:30] Marcos Peixoto: Recebi, agora está tudo certo.
+[20/07/2025, 01:34:30] Suporte Exemplo: feito
+[20/07/2025, 08:34:30] Marcos Peixoto: O número do pedido é 48213.
+[20/07/2025, 08:34:43] Marcos Peixoto: ok
+[20/07/2025, 08:36:39] Marcos Peixoto: O número do pedido é 48213.
+[20/07/2025, 08:38:39] Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+[22/09/2025, 16:18:28] Suporte Exemplo: Olá, temos uma atualização sobre o seu chamado.
+[22/09/2025, 23:18:28] Marcos Peixoto: O número do pedido é 48213.
+[23/09/2025, 02:18:28] Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+[23/09/2025, 02:19:35] Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+[23/09/2025, 02:21:35] Marcos Peixoto: No site ainda aparece como pendente.
+[03/10/2025, 00:02:34] Marcos Peixoto: Olá, meu pedido ainda não chegou.
+[03/10/2025, 00:03:26] Marcos Peixoto: ‎<anexado: 00000001-PHOTO-2025-10-03-00-03-26.jpg>
+Segue a foto da etiqueta
+[03/10/2025, 00:04:43] Marcos Peixoto: Perfeito, obrigado pela resposta rápida!
+[03/10/2025, 00:06:43] Suporte Exemplo: feito
+[03/10/2025, 00:07:12] Suporte Exemplo: Posso ajudar com mais alguma coisa?
+[03/10/2025, 00:16:12] Marcos Peixoto: Recebi, agora está tudo certo.
+[03/10/2025, 03:16:12] Suporte Exemplo: Posso ajudar com mais alguma coisa?
+[03/10/2025, 03:17:02] Suporte Exemplo: ‎<anexado: 00000002-VIDEO-2025-10-03-03-17-02.mp4>
+[03/10/2025, 04:27:02] Marcos Peixoto: ‎<anexado: 00000003-STICKER-2025-10-03-04-27-02.webp>
+[03/10/2025, 04:28:37] Marcos Peixoto: ‎<anexado: 00000004-AUDIO-2025-10-03-04-28-37.opus>
+[03/10/2025, 04:29:10] Marcos Peixoto: Quinta fica ótimo, obrigada.
+[25/10/2025, 05:21:53] Marcos Peixoto: Vocês têm o modelo azul em estoque?
+[25/10/2025, 05:23:22] Marcos Peixoto: Quinta fica ótimo, obrigada.
+[25/10/2025, 05:48:22] Suporte Exemplo: ‎<anexado: 00000005-PHOTO-2025-10-25-05-48-22.jpg>
+Segue a foto da etiqueta
+[25/10/2025, 05:49:36] Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+[25/10/2025, 06:14:36] Marcos Peixoto: Quinta fica ótimo, obrigada.
+[25/10/2025, 06:15:40] Marcos Peixoto: Quinta fica ótimo, obrigada.
+[25/10/2025, 06:17:25] Marcos Peixoto: Pode me ligar depois das 17h?
+[19/12/2025, 06:44:44] Marcos Peixoto: Olá, meu pedido ainda não chegou.
+[19/12/2025, 06:45:46] Marcos Peixoto: 👍
+[19/12/2025, 07:10:46] Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+[08/01/2026, 10:01:03] Suporte Exemplo: Olá, temos uma atualização sobre o seu chamado.
+[08/01/2026, 10:01:47] Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+[08/01/2026, 10:02:07] Suporte Exemplo: Posso ajudar com mais alguma coisa?
+[08/01/2026, 10:03:07] Marcos Peixoto: Quinta fica ótimo, obrigada.
+[08/01/2026, 10:03:39] Marcos Peixoto: Quinta fica ótimo, obrigada.
+[08/01/2026, 10:05:20] Marcos Peixoto: No site ainda aparece como pendente.
+[08/01/2026, 10:30:20] Suporte Exemplo: 👍
+[08/01/2026, 10:32:06] Suporte Exemplo: ok
+[08/01/2026, 10:33:23] Suporte Exemplo: Pode me enviar o número do pedido, por favor?
+[08/01/2026, 10:42:23] Marcos Peixoto: O número do pedido é 48213.
+[08/01/2026, 11:07:23] Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+[08/01/2026, 11:08:45] Suporte Exemplo: Posso ajudar com mais alguma coisa?
+[08/01/2026, 11:09:47] Suporte Exemplo: certo
+[29/01/2026, 22:42:00] Suporte Exemplo: Olá! Passando para saber do seu pedido recente.
+[29/01/2026, 22:42:20] Suporte Exemplo: sim
+[29/01/2026, 22:44:19] Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+[29/01/2026, 22:46:19] Marcos Peixoto: No site ainda aparece como pendente.
+[30/01/2026, 01:46:19] Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+[30/01/2026, 01:47:43] Suporte Exemplo: Pode me enviar o número do pedido, por favor?
+[30/01/2026, 01:49:26] Suporte Exemplo: Pode me enviar o número do pedido, por favor?
+[30/01/2026, 01:53:26] Marcos Peixoto: Quinta fica ótimo, obrigada.
+[30/01/2026, 01:53:49] Marcos Peixoto: No site ainda aparece como pendente.
+[30/01/2026, 01:54:42] Marcos Peixoto: No site ainda aparece como pendente.
+[30/01/2026, 02:19:42] Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+[30/01/2026, 02:23:42] Marcos Peixoto: No site ainda aparece como pendente.
+[30/01/2026, 02:23:49] Marcos Peixoto: Recebi, agora está tudo certo.
+[30/01/2026, 02:24:36] Marcos Peixoto: Recebi, agora está tudo certo.

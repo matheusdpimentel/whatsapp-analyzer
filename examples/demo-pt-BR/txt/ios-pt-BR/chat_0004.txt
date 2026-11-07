@@ -1,0 +1,15 @@
+[22/02/2025, 19:23:57] Felipe Arruda: ‎As mensagens e as chamadas são protegidas com a criptografia de ponta a ponta. Ninguém fora desta conversa, nem mesmo o WhatsApp, pode ler ou ouvi-las.
+[22/02/2025, 19:23:57] Felipe Arruda: Olá, meu pedido ainda não chegou.
+[22/02/2025, 19:25:13] Felipe Arruda: O número do pedido é 48213.
+[22/02/2025, 19:27:00] Felipe Arruda: Pode me ligar depois das 17h?
+[22/02/2025, 19:28:00] Suporte Exemplo: 👍
+[22/02/2025, 19:28:37] Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+[22/02/2025, 19:29:21] Suporte Exemplo: Acabei de enviar a nota fiscal para o seu e-mail.
+[22/02/2025, 19:33:21] Felipe Arruda: ok
+[22/02/2025, 19:34:04] Felipe Arruda: No site ainda aparece como pendente.
+[24/02/2025, 01:34:04] Suporte Exemplo: Oi, sua peça de reposição já está disponível para retirada.
+[24/02/2025, 02:44:04] Felipe Arruda: No site ainda aparece como pendente.
+[24/02/2025, 02:44:59] Felipe Arruda: O número do pedido é 48213.
+[24/02/2025, 03:54:59] Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+[24/02/2025, 03:55:22] Suporte Exemplo: Posso ajudar com mais alguma coisa?
+[11/06/2025, 05:19:00] Suporte Exemplo: ‎<anexado: 00000001-DOCUMENT-2025-06-11-05-19-00.pdf>

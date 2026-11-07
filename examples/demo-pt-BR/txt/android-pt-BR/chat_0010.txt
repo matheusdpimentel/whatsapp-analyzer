@@ -1,0 +1,21 @@
+07/01/2026 15:10 - As mensagens e as chamadas são protegidas com a criptografia de ponta a ponta. Ninguém fora desta conversa, nem mesmo o WhatsApp, pode ler ou ouvi-las.
+07/01/2026 15:10 - Suporte Exemplo: Oi, sua peça de reposição já está disponível para retirada.
+07/01/2026 15:10 - Suporte Exemplo: Pode me enviar o número do pedido, por favor?
+07/01/2026 15:10 - Suporte Exemplo: Pode me enviar o número do pedido, por favor?
+07/01/2026 15:12 - Heitor Campos: 👍
+07/01/2026 15:13 - Heitor Campos: ok
+10/01/2026 15:07 - Heitor Campos: <Mídia oculta>
+10/01/2026 15:08 - Heitor Campos: Pode me ligar depois das 17h?
+10/01/2026 15:09 - Heitor Campos: sim
+27/01/2026 09:12 - Gabriela Nunes: Vocês têm o modelo azul em estoque?
+27/01/2026 09:21 - Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+27/01/2026 09:21 - Suporte Exemplo: Desculpe a demora. O pacote saiu do nosso estoque hoje.
+29/01/2026 05:06 - Suporte Exemplo: Olá, temos uma atualização sobre o seu chamado.
+29/01/2026 05:06 - Suporte Exemplo: Obrigado por avisar. Vou verificar agora mesmo.
+29/01/2026 05:08 - Suporte Exemplo: Posso ajudar com mais alguma coisa?
+29/01/2026 05:33 - Heitor Campos: Perfeito, obrigado pela resposta rápida!
+29/01/2026 05:35 - Heitor Campos: Pode me ligar depois das 17h?
+29/01/2026 05:37 - Heitor Campos: obrigado!
+29/01/2026 12:37 - Suporte Exemplo: O técnico pode ir na quinta à tarde. Fica bom para você?
+29/01/2026 12:38 - Suporte Exemplo: Pode me enviar o número do pedido, por favor?
+29/01/2026 13:03 - Marcos Peixoto: Recebi, agora está tudo certo.

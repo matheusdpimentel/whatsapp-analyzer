@@ -69,3 +69,25 @@ none = "None installed (LLM stages are optional)"
 label = "Provider credentials"
 value = "Set in the environment: {names}"
 none = "No provider API keys found in the environment"
+
+[demo_data]
+help = "Generate a synthetic demo dataset: WhatsApp TXT exports, CSV and XLSX. No real data is used."
+done = "Synthetic dataset written to {path}"
+summary = "{conversations} conversations, {messages} messages, {files} files"
+notice = "All names, phone numbers and messages are fictional."
+
+[demo_data.arg]
+output_dir = "Directory to write the dataset to."
+
+[demo_data.option]
+conversations = "Number of profile-based conversations. Two edge-case conversations are always added."
+seed = "Random seed. The same seed always produces the same dataset."
+locale = "Language of the generated conversations and export formats."
+platform = "Which WhatsApp export formats to write."
+overwrite = "Write into a directory that is not empty. Files from a previous dataset listed in its manifest are replaced; other files are kept."
+
+[demo_data.error]
+not_empty = "The directory '{path}' is not empty."
+not_empty_hint = "Choose an empty directory or pass --overwrite."
+not_a_directory = "'{path}' exists and is not a directory."
+not_writable = "Could not write the dataset to '{path}': {reason}."
