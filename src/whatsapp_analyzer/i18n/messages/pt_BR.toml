@@ -1,0 +1,71 @@
+# Brazilian Portuguese catalog. Keys must match en.toml.
+
+[cli]
+help = "Analisa localmente exportações de conversas do WhatsApp, com métricas determinísticas e classificação opcional por LLM."
+
+[cli.option]
+json = "Escreve JSON legível por máquina na saída padrão. Mensagens para humanos vão para a saída de erro."
+lang = "Idioma da interface: en ou pt-BR."
+version = "Mostra a versão e sai."
+
+[cli.error]
+label = "Erro"
+unsupported_language = "Idioma '{value}' não suportado. Idiomas disponíveis: {supported}."
+internal = "Erro interno inesperado ({error_type}). Defina WCA_DEBUG=1 para ver o traceback."
+interrupted = "Interrompido pelo usuário."
+missing_command = "Nenhum comando informado."
+usage_hint = "Execute '{prog} --help' para ver os comandos e opções disponíveis."
+
+[doctor]
+help = "Verifica o ambiente local. Nenhum dado é enviado para fora da máquina."
+title = "Verificação do ambiente"
+summary = "{ok} ok, {fail} falhas"
+failed = "Uma ou mais verificações do ambiente falharam."
+
+[doctor.column]
+check = "Verificação"
+status = "Status"
+details = "Detalhes"
+
+[doctor.status]
+ok = "ok"
+fail = "falhou"
+info = "info"
+
+[doctor.check.python_version]
+label = "Python"
+ok = "Python {version}"
+
+[doctor.check.platform]
+label = "Sistema operacional"
+value = "{system} {release} ({machine})"
+
+[doctor.check.cpu_count]
+label = "Núcleos de CPU"
+value = "{count} núcleos lógicos"
+unavailable = "Não foi possível determinar"
+
+[doctor.check.memory_total]
+label = "Memória física"
+value = "{gib} GiB no total"
+unavailable = "Não foi possível determinar nesta plataforma"
+
+[doctor.check.disk_free]
+label = "Espaço livre em disco"
+value = "{gib} GiB livres em {path}"
+unavailable = "Não foi possível determinar para o diretório atual"
+
+[doctor.check.sqlite]
+label = "SQLite"
+ok = "SQLite {version}, modo WAL suportado"
+fail = "SQLite {version} não suporta o modo WAL"
+
+[doctor.check.provider_sdks]
+label = "SDKs de provedores de LLM"
+value = "Instalados: {packages}"
+none = "Nenhum instalado (as etapas com LLM são opcionais)"
+
+[doctor.check.credentials]
+label = "Credenciais de provedores"
+value = "Definidas no ambiente: {names}"
+none = "Nenhuma chave de API de provedor encontrada no ambiente"

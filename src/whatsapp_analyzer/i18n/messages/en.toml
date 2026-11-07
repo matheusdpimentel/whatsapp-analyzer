@@ -1,0 +1,71 @@
+# Reference catalog. Keys are stable identifiers; values use str.format placeholders.
+
+[cli]
+help = "Analyze WhatsApp conversation exports locally, with deterministic metrics and optional LLM classification."
+
+[cli.option]
+json = "Write machine-readable JSON to stdout. Human-readable messages go to stderr."
+lang = "Interface language: en or pt-BR."
+version = "Show the version and exit."
+
+[cli.error]
+label = "Error"
+unsupported_language = "Unsupported language '{value}'. Supported languages: {supported}."
+internal = "Unexpected internal error ({error_type}). Set WCA_DEBUG=1 to show the traceback."
+interrupted = "Interrupted by the user."
+missing_command = "No command given."
+usage_hint = "Run '{prog} --help' to see the available commands and options."
+
+[doctor]
+help = "Check the local environment. Sends no data anywhere."
+title = "Environment check"
+summary = "{ok} ok, {fail} failures"
+failed = "One or more environment checks failed."
+
+[doctor.column]
+check = "Check"
+status = "Status"
+details = "Details"
+
+[doctor.status]
+ok = "ok"
+fail = "failed"
+info = "info"
+
+[doctor.check.python_version]
+label = "Python"
+ok = "Python {version}"
+
+[doctor.check.platform]
+label = "Operating system"
+value = "{system} {release} ({machine})"
+
+[doctor.check.cpu_count]
+label = "CPU cores"
+value = "{count} logical cores"
+unavailable = "Could not be determined"
+
+[doctor.check.memory_total]
+label = "Physical memory"
+value = "{gib} GiB total"
+unavailable = "Could not be determined on this platform"
+
+[doctor.check.disk_free]
+label = "Free disk space"
+value = "{gib} GiB free in {path}"
+unavailable = "Could not be determined for the current directory"
+
+[doctor.check.sqlite]
+label = "SQLite"
+ok = "SQLite {version}, WAL mode supported"
+fail = "SQLite {version} does not support WAL mode"
+
+[doctor.check.provider_sdks]
+label = "LLM provider SDKs"
+value = "Installed: {packages}"
+none = "None installed (LLM stages are optional)"
+
+[doctor.check.credentials]
+label = "Provider credentials"
+value = "Set in the environment: {names}"
+none = "No provider API keys found in the environment"
