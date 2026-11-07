@@ -91,3 +91,113 @@ not_empty = "The directory '{path}' is not empty."
 not_empty_hint = "Choose an empty directory or pass --overwrite."
 not_a_directory = "'{path}' exists and is not a directory."
 not_writable = "Could not write the dataset to '{path}': {reason}."
+
+[import]
+help = "Import and validate conversation exports (iMazing TXT, WhatsApp TXT, CSV, XLSX). Optionally write them as a normalized CSV."
+progress = "Reading file {index}/{total} ({records} records)"
+written = "Normalized CSV written: {records} records to {path}"
+not_written = "No normalized CSV was written because the import failed."
+file_label = "file #{index}"
+
+[import.arg]
+paths = "Files or directories to import. Directories are read non-recursively."
+
+[import.option]
+format = "Input format. 'auto' detects it from the file extension and content."
+owner = "Display name of the account owner. Required for WhatsApp TXT exports to tell sent from received messages; elsewhere it labels sent messages."
+date_order = "Date order for WhatsApp TXT exports whose dates are ambiguous: dmy, mdy or ymd."
+mapping = "Column mapping for CSV/XLSX: a TOML mapping file or a preset name (canonical, imazing-csv)."
+map = "Map one canonical field to a source column, e.g. --map timestamp=sent_at. Can be repeated."
+sheet = "XLSX worksheet to read."
+header_row = "XLSX row number that contains the column names."
+encoding = "Text encoding of TXT/CSV inputs when it is not UTF-8, e.g. cp1252."
+delimiter = "CSV delimiter when automatic detection is not wanted."
+normalized_out = "Write the accepted messages to this CSV file in the canonical column layout."
+overwrite = "Replace the normalized CSV file if it already exists."
+drop_duplicates = "Remove exact duplicate messages. By default they are kept and reported, because exports without seconds make genuine repeated messages look identical."
+strict = "Fail when any record is invalid, not only when a whole file is rejected."
+show_file_names = "Show file names in the report. They are hidden by default because they often contain contact names."
+
+[import.error]
+rejected = "{rejected} of {total} files were rejected; nothing was written."
+no_inputs = "No input files were found."
+strict = "{invalid} invalid records found and --strict was given."
+output_exists = "The output file '{path}' already exists."
+output_is_directory = "'{path}' is a directory, not a file."
+not_writable = "Could not write the normalized CSV to '{path}': {reason}"
+invalid_override = "Invalid column mapping '{value}'. Use FIELD=COLUMN with a canonical field name."
+
+[import.hint]
+mapping = "See docs/input-formats.md for mapping files and the canonical field names."
+overwrite = "Choose another file or pass --overwrite."
+rejected = "Check the rejected files above; --show-file-names lists their names."
+no_inputs = "Pass .txt, .csv or .xlsx files, or a directory that contains them (with --format, only that format's extension is read)."
+
+[import.summary]
+title = "Import summary"
+files_inspected = "Files inspected"
+files_accepted = "Files accepted"
+files_rejected = "Files rejected"
+records_read = "Records read"
+records_valid = "Valid records"
+records_invalid = "Invalid records"
+duplicates = "Duplicate records"
+conversations = "Conversations"
+period = "Period"
+formats = "Formats"
+
+[import.issues]
+title = "Findings"
+
+[import.issues.column]
+code = "Code"
+severity = "Severity"
+count = "Count"
+meaning = "Meaning"
+
+[import.severity]
+error = "error"
+warning = "warning"
+info = "info"
+
+[import.issue]
+MALFORMED_RECORD = "Record could not be parsed; it was skipped."
+INVALID_TIMESTAMP = "Timestamp could not be read; the record was skipped."
+MISSING_REQUIRED_FIELD = "A required field is empty; the record was skipped."
+INVALID_DIRECTION = "Direction value is not recognized; the record was skipped."
+INVALID_VALUE = "message_type or media_kind value is not recognized; the record was skipped."
+DUPLICATE_RECORD = "Exact duplicate of an earlier message; kept unless --drop-duplicates."
+TIMESTAMP_OUT_OF_ORDER = "Message is older than the one before it; source order is kept."
+CONTROL_CHARACTERS_REMOVED = "Control characters were removed from the text."
+EMPTY_MESSAGE = "Message without text or attachment; kept as an empty text message."
+TITLE_CHANGED = "The chat title changed within the file."
+REPLY_QUOTE_REMOVED = "A reply quote was removed from the text (not part of the canonical schema)."
+REACTIONS_REMOVED = "Reactions were removed from the text (not part of the canonical schema)."
+EMPTY_ROW = "Empty row skipped."
+OWNER_NOT_IN_FILE = "The --owner name never appears as a sender in this file: every message counts as received. Check the spelling if that is unexpected."
+
+[import.rejected]
+title = "Rejected files"
+
+[import.rejected.column]
+file = "File"
+code = "Code"
+reason = "Reason"
+
+[import.input_error]
+FILE_NOT_FOUND = "File not found."
+PERMISSION_DENIED = "Permission denied."
+UNSUPPORTED_FORMAT = "Unsupported file format."
+UNSUPPORTED_ENCODING = "The file is not valid UTF-8 (or the given encoding). Pass --encoding."
+EMPTY_FILE = "The file is empty."
+HEADER_NOT_FOUND = "No header row fits a column mapping. Pass --mapping, --map or --header-row."
+INVALID_COLUMN_MAPPING = "The column mapping does not fit this file."
+MISSING_REQUIRED_COLUMNS = "Required fields are not mapped to any column. Pass --mapping or --map."
+SHEET_NOT_FOUND = "The requested worksheet does not exist."
+AMBIGUOUS_SHEET = "Several worksheets could contain the data. Pass --sheet."
+SPREADSHEET_CORRUPTED = "The spreadsheet could not be opened; it may be corrupted or not an .xlsx file."
+AMBIGUOUS_DATE_ORDER = "Day and month order cannot be inferred from the dates. Pass --date-order."
+MIXED_DATE_FORMATS = "The file mixes day-first and month-first dates."
+OWNER_REQUIRED = "WhatsApp TXT exports need --owner to tell sent from received messages."
+NO_VALID_RECORDS = "The file contains no valid records."
+CONVERSATION_ID_CONFLICT = "Another TXT file in this import has the same name, so both chats would get the same conversation ID. Rename one of the files."

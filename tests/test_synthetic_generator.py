@@ -4,7 +4,7 @@ from datetime import timedelta
 
 import pytest
 
-from whatsapp_analyzer.schema import Direction, MediaKind, MessageType
+from whatsapp_analyzer.schema import FILE_MEDIA_KINDS, Direction, MessageType
 from whatsapp_analyzer.synthetic.generator import (
     DEFAULT_END,
     MIN_SESSION_GAP,
@@ -104,7 +104,7 @@ def test_edge_case_conversation_covers_every_message_shape(
 ) -> None:
     edge = _by_profile(conversations, "edge_cases")
     messages = edge.messages
-    assert {m.media_kind for m in messages if m.media_kind} == set(MediaKind)
+    assert {m.media_kind for m in messages if m.media_kind} == set(FILE_MEDIA_KINDS)
     assert any(m.message_type is MessageType.DELETED for m in messages)
     assert any(m.message_type is MessageType.MEDIA and m.text for m in messages)
     assert any(m.text and "\n" in m.text for m in messages)

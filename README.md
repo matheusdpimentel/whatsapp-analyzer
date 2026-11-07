@@ -4,9 +4,9 @@ A local, terminal-based tool for processing, analyzing and classifying WhatsApp 
 exports. It computes deterministic engagement metrics and can optionally classify conversations
 with an LLM provider that you configure.
 
-> **Status: early development (milestone 1).** The CLI skeleton, the `doctor` command and the
-> synthetic data generator exist; importing and analyzing conversations come next. Architecture
-> decisions are recorded in [`docs/adr/`](docs/adr/).
+> **Status: early development (milestone 2).** Conversations can be imported, validated and
+> normalized; metrics and LLM analysis come next. Architecture decisions are recorded in
+> [`docs/adr/`](docs/adr/).
 
 This project is not affiliated with, endorsed by, or sponsored by WhatsApp or Meta.
 
@@ -34,6 +34,20 @@ whatsapp-analyzer --lang pt-BR doctor     # Brazilian Portuguese interface
 
 Global options go before the command name. The interface language can also be set with the
 `WCA_LANG` environment variable (`en` or `pt-BR`).
+
+### Importing conversations
+
+```bash
+whatsapp-analyzer import ./exports                                # validate and report
+whatsapp-analyzer import ./exports --normalized-out messages.csv   # also write canonical CSV
+whatsapp-analyzer import chat.txt --owner "Your Name" --date-order dmy   # WhatsApp TXT export
+whatsapp-analyzer import data.csv --mapping my-mapping.toml        # CSV/XLSX with other columns
+```
+
+Supported inputs: iMazing TXT and CSV exports, WhatsApp's own TXT exports (experimental), and
+any CSV/XLSX file with a column mapping. Every import prints a validation report with counts
+and finding codes, never message text. Details, the canonical schema, mapping files and
+troubleshooting are in [`docs/input-formats.md`](docs/input-formats.md).
 
 ### Synthetic demo data
 
@@ -78,7 +92,7 @@ Failures add an `error` object with a stable English `code`, a localized `messag
 | 11 | Output could not be written (permissions, invalid path, full disk) |
 | 130 | Interrupted by the user |
 
-Codes 3 to 8 and 10 are reserved for commands that are not implemented yet.
+Codes 4 to 8 and 10 are reserved for commands that are not implemented yet.
 
 ## Development
 
@@ -91,8 +105,10 @@ uv run mypy              # type check (strict)
 
 ## Privacy
 
-The analyzer runs locally. `doctor` sends no data anywhere and only reports whether provider
-credentials are set, never their values. Keep API keys in environment variables or a local
+The analyzer runs locally and sends no data anywhere. Reports show counts and codes, never
+message text; file names are hidden unless `--show-file-names` is given. `doctor` only reports
+whether provider credentials are set, never their values. A normalized CSV contains your
+messages: keep it as private as the original exports. Keep API keys in environment variables or a local
 `.env` file (see `.env.example`); never pass them as command-line arguments.
 
 ## License

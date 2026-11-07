@@ -1,0 +1,17 @@
+# Mapping for examples/*/conversations_custom_columns.csv.
+# Usage: whatsapp-analyzer import FILE.csv --mapping examples/mappings/custom-columns.toml
+
+[columns]
+conversation_id = "chat_id"
+timestamp = "sent_at"
+sender = "author"
+direction = "from_me"
+text = "body"
+message_type = "kind"
+
+[timestamp]
+format = "%d/%m/%Y %H:%M:%S"
+
+[values.direction]
+"true" = "outbound"
+"false" = "inbound"

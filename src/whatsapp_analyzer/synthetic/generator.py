@@ -9,7 +9,7 @@ import random
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 
-from whatsapp_analyzer.schema import Direction, MediaKind, MessageType
+from whatsapp_analyzer.schema import FILE_MEDIA_KINDS, Direction, MediaKind, MessageType
 from whatsapp_analyzer.synthetic.phrases import PHRASES, PhraseBank
 
 GENERATOR_VERSION = 1  # bump when the output for a given seed changes on purpose
@@ -188,7 +188,7 @@ def _message(
     direction = Direction.OUTBOUND if from_owner else Direction.INBOUND
     roll = rng.random()
     if roll < MEDIA_PROBABILITY:
-        kind = rng.choice(list(MediaKind))
+        kind = rng.choice(FILE_MEDIA_KINDS)
         caption = (
             rng.choice(bank.captions) if kind is MediaKind.IMAGE and rng.random() < 0.5 else None
         )

@@ -91,3 +91,113 @@ not_empty = "O diretório '{path}' não está vazio."
 not_empty_hint = "Escolha um diretório vazio ou use --overwrite."
 not_a_directory = "'{path}' existe e não é um diretório."
 not_writable = "Não foi possível gravar os dados em '{path}': {reason}."
+
+[import]
+help = "Importa e valida exportações de conversas (TXT do iMazing, TXT do WhatsApp, CSV, XLSX). Opcionalmente grava um CSV normalizado."
+progress = "Lendo arquivo {index}/{total} ({records} registros)"
+written = "CSV normalizado gravado: {records} registros em {path}"
+not_written = "Nenhum CSV normalizado foi gravado porque a importação falhou."
+file_label = "arquivo #{index}"
+
+[import.arg]
+paths = "Arquivos ou diretórios a importar. Diretórios são lidos sem recursão."
+
+[import.option]
+format = "Formato de entrada. 'auto' detecta pela extensão e pelo conteúdo do arquivo."
+owner = "Nome de exibição do dono da conta. Obrigatório em exportações TXT do WhatsApp para distinguir mensagens enviadas e recebidas; nos demais formatos, rotula as mensagens enviadas."
+date_order = "Ordem das datas em exportações TXT do WhatsApp com datas ambíguas: dmy, mdy ou ymd."
+mapping = "Mapeamento de colunas para CSV/XLSX: um arquivo TOML ou o nome de um preset (canonical, imazing-csv)."
+map = "Mapeia um campo canônico para uma coluna de origem, ex.: --map timestamp=sent_at. Pode ser repetido."
+sheet = "Planilha do XLSX a ler."
+header_row = "Número da linha do XLSX que contém os nomes das colunas."
+encoding = "Codificação de TXT/CSV quando não for UTF-8, ex.: cp1252."
+delimiter = "Delimitador do CSV, quando não se quer a detecção automática."
+normalized_out = "Grava as mensagens aceitas neste arquivo CSV, no layout canônico de colunas."
+overwrite = "Substitui o CSV normalizado se ele já existir."
+drop_duplicates = "Remove mensagens duplicadas exatas. Por padrão elas são mantidas e relatadas, porque exportações sem segundos fazem mensagens repetidas legítimas parecerem idênticas."
+strict = "Falha quando qualquer registro é inválido, não só quando um arquivo inteiro é rejeitado."
+show_file_names = "Mostra os nomes dos arquivos no relatório. Ficam ocultos por padrão porque costumam conter nomes de contatos."
+
+[import.error]
+rejected = "{rejected} de {total} arquivos foram rejeitados; nada foi gravado."
+no_inputs = "Nenhum arquivo de entrada foi encontrado."
+strict = "{invalid} registros inválidos encontrados e --strict foi usado."
+output_exists = "O arquivo de saída '{path}' já existe."
+output_is_directory = "'{path}' é um diretório, não um arquivo."
+not_writable = "Não foi possível gravar o CSV normalizado em '{path}': {reason}"
+invalid_override = "Mapeamento de coluna inválido '{value}'. Use CAMPO=COLUNA com um nome de campo canônico."
+
+[import.hint]
+mapping = "Veja docs/input-formats.md para arquivos de mapeamento e os nomes dos campos canônicos."
+overwrite = "Escolha outro arquivo ou use --overwrite."
+rejected = "Confira os arquivos rejeitados acima; --show-file-names mostra os nomes."
+no_inputs = "Informe arquivos .txt, .csv ou .xlsx, ou um diretório que os contenha (com --format, só a extensão daquele formato é lida)."
+
+[import.summary]
+title = "Resumo da importação"
+files_inspected = "Arquivos inspecionados"
+files_accepted = "Arquivos aceitos"
+files_rejected = "Arquivos rejeitados"
+records_read = "Registros lidos"
+records_valid = "Registros válidos"
+records_invalid = "Registros inválidos"
+duplicates = "Registros duplicados"
+conversations = "Conversas"
+period = "Período"
+formats = "Formatos"
+
+[import.issues]
+title = "Ocorrências"
+
+[import.issues.column]
+code = "Código"
+severity = "Gravidade"
+count = "Quantidade"
+meaning = "Significado"
+
+[import.severity]
+error = "erro"
+warning = "aviso"
+info = "info"
+
+[import.issue]
+MALFORMED_RECORD = "Registro não pôde ser interpretado; foi ignorado."
+INVALID_TIMESTAMP = "Data e hora ilegíveis; o registro foi ignorado."
+MISSING_REQUIRED_FIELD = "Um campo obrigatório está vazio; o registro foi ignorado."
+INVALID_DIRECTION = "Valor de direção não reconhecido; o registro foi ignorado."
+INVALID_VALUE = "Valor de message_type ou media_kind não reconhecido; o registro foi ignorado."
+DUPLICATE_RECORD = "Duplicata exata de uma mensagem anterior; mantida, a menos que se use --drop-duplicates."
+TIMESTAMP_OUT_OF_ORDER = "Mensagem mais antiga que a anterior; a ordem de origem é mantida."
+CONTROL_CHARACTERS_REMOVED = "Caracteres de controle foram removidos do texto."
+EMPTY_MESSAGE = "Mensagem sem texto nem anexo; mantida como mensagem de texto vazia."
+TITLE_CHANGED = "O título do chat mudou dentro do arquivo."
+REPLY_QUOTE_REMOVED = "Uma citação de resposta foi removida do texto (não faz parte do schema canônico)."
+REACTIONS_REMOVED = "Reações foram removidas do texto (não fazem parte do schema canônico)."
+EMPTY_ROW = "Linha vazia ignorada."
+OWNER_NOT_IN_FILE = "O nome informado em --owner nunca aparece como remetente neste arquivo: todas as mensagens contam como recebidas. Confira a grafia se isso não era esperado."
+
+[import.rejected]
+title = "Arquivos rejeitados"
+
+[import.rejected.column]
+file = "Arquivo"
+code = "Código"
+reason = "Motivo"
+
+[import.input_error]
+FILE_NOT_FOUND = "Arquivo não encontrado."
+PERMISSION_DENIED = "Permissão negada."
+UNSUPPORTED_FORMAT = "Formato de arquivo não suportado."
+UNSUPPORTED_ENCODING = "O arquivo não é UTF-8 válido (nem está na codificação informada). Use --encoding."
+EMPTY_FILE = "O arquivo está vazio."
+HEADER_NOT_FOUND = "Nenhuma linha de cabeçalho corresponde a um mapeamento de colunas. Use --mapping, --map ou --header-row."
+INVALID_COLUMN_MAPPING = "O mapeamento de colunas não corresponde a este arquivo."
+MISSING_REQUIRED_COLUMNS = "Campos obrigatórios não estão mapeados para nenhuma coluna. Use --mapping ou --map."
+SHEET_NOT_FOUND = "A planilha informada não existe."
+AMBIGUOUS_SHEET = "Mais de uma planilha pode conter os dados. Use --sheet."
+SPREADSHEET_CORRUPTED = "A planilha não pôde ser aberta; pode estar corrompida ou não ser um .xlsx."
+AMBIGUOUS_DATE_ORDER = "Não é possível inferir a ordem de dia e mês pelas datas. Use --date-order."
+MIXED_DATE_FORMATS = "O arquivo mistura datas com dia primeiro e mês primeiro."
+OWNER_REQUIRED = "Exportações TXT do WhatsApp precisam de --owner para distinguir mensagens enviadas e recebidas."
+NO_VALID_RECORDS = "O arquivo não contém nenhum registro válido."
+CONVERSATION_ID_CONFLICT = "Outro arquivo TXT desta importação tem o mesmo nome, então as duas conversas receberiam o mesmo ID. Renomeie um dos arquivos."
