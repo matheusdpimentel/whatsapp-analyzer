@@ -1,6 +1,7 @@
 from collections import Counter
 from collections.abc import Callable
 from contextlib import ExitStack
+from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
@@ -17,6 +18,7 @@ from whatsapp_analyzer.cli.output import (
     stdout_console,
     write_json,
 )
+from whatsapp_analyzer.cli.workspace_support import open_database, resolve_workspace, writer_lock
 from whatsapp_analyzer.errors import AppError
 from whatsapp_analyzer.exit_codes import ExitCode
 from whatsapp_analyzer.i18n import t
@@ -31,6 +33,11 @@ from whatsapp_analyzer.ingest.model import SEVERITY, InputError, InputFormat, Me
 from whatsapp_analyzer.ingest.pipeline import ImportOptions, run_import
 from whatsapp_analyzer.ingest.report import FileReport, ImportReport
 from whatsapp_analyzer.ingest.whatsapp_txt import DateOrder
+from whatsapp_analyzer.store.importer import (
+    ImportOutcome,
+    ReplacementConflictError,
+    WorkspaceImporter,
+)
 
 
 class FormatChoice(StrEnum):
@@ -71,8 +78,22 @@ def import_command(
     drop_duplicates: Annotated[bool, typer.Option(help=t("import.option.drop_duplicates"))] = False,
     strict: Annotated[bool, typer.Option(help=t("import.option.strict"))] = False,
     show_file_names: Annotated[bool, typer.Option(help=t("import.option.show_file_names"))] = False,
+    workspace: Annotated[
+        Path | None,
+        typer.Option("--workspace", "-w", metavar="DIR", help=t("import.option.workspace")),
+    ] = None,
+    replace_unrelated: Annotated[
+        bool, typer.Option(help=t("import.option.replace_unrelated"))
+    ] = False,
 ) -> None:
     state: CliState = ctx.obj
+    if workspace is not None and drop_duplicates:
+        raise AppError(
+            "INCOMPATIBLE_OPTIONS",
+            ExitCode.USAGE_ERROR,
+            t("import.error.drop_duplicates_workspace"),
+            hint=t("import.hint.drop_duplicates_workspace"),
+        )
     options = ImportOptions(
         format=None if input_format is FormatChoice.AUTO else InputFormat(input_format.value),
         owner=owner,
@@ -88,25 +109,50 @@ def import_command(
     if normalized_out is not None:
         _check_output(normalized_out, overwrite)
 
-    report, written = _run(paths, options, normalized_out, show_progress=not state.json_output)
-    failure = _failure(report, strict)
+    with ExitStack() as stack:
+        importer = None
+        if workspace is not None:
+            target = resolve_workspace(workspace)
+            stack.enter_context(writer_lock(target))
+            connection = open_database(target)
+            stack.callback(connection.close)
+            importer = WorkspaceImporter(connection, allow_unrelated=replace_unrelated)
+        result = _run(paths, options, normalized_out, not state.json_output, importer, strict)
+    failure = result.conflict or _failure(result.report, strict)
 
     if state.json_output:
-        data = report.to_dict(include_file_names=show_file_names)
+        data = result.report.to_dict(include_file_names=show_file_names)
         data["output"] = (
-            {"path": str(normalized_out), "records": written} if written is not None else None
+            {"path": str(normalized_out), "records": result.written}
+            if result.written is not None
+            else None
         )
+        data["workspace"] = result.outcome.to_dict() if result.outcome else None
         write_json(result_payload("import", data, failure))
     else:
-        _render(report, show_file_names, normalized_out, written, failure)
+        _render(result, show_file_names, normalized_out, failure)
     if failure is not None:
         raise typer.Exit(failure.exit_code)
 
 
+@dataclass
+class _Result:
+    report: ImportReport
+    written: int | None = None
+    outcome: ImportOutcome | None = None
+    conflict: AppError | None = None
+
+
 def _run(
-    paths: list[Path], options: ImportOptions, output: Path | None, show_progress: bool
-) -> tuple[ImportReport, int | None]:
-    """Import, writing the normalized CSV only if every file is accepted."""
+    paths: list[Path],
+    options: ImportOptions,
+    output: Path | None,
+    show_progress: bool,
+    importer: WorkspaceImporter | None,
+    strict: bool,
+) -> _Result:
+    """Import; write the workspace and the normalized CSV only if the import succeeds (every
+    file accepted and, with --strict, no invalid record)."""
     with ExitStack() as stack:
         writer = None
         if output is not None:
@@ -121,17 +167,57 @@ def _run(
             report = run_import(
                 paths,
                 options,
-                sink=_guarded_sink(writer) if writer else None,
+                sink=_combined_sink(writer, importer),
                 progress=_progress_callback(progress) if progress else None,
+                on_file=importer.on_file if importer else None,
             )
-            if writer is None or report.rejected_files or not report.files:
-                return report, None
-            writer.commit()
+            result = _Result(report)
+            if _failure(report, strict) is not None:
+                return result
+            if importer is not None:
+                try:
+                    result.outcome = importer.apply(report, options)
+                except ReplacementConflictError as exc:
+                    result.conflict = _conflict_error(exc)
+                    return result
+            if writer is not None:
+                writer.commit()
+                result.written = writer.rows
         except (_OutputFailure, OSError) as exc:
-            assert output is not None
+            if output is None:
+                raise
             cause = exc.cause if isinstance(exc, _OutputFailure) else exc
             raise _output_error(output, cause) from exc
-        return report, writer.rows
+        return result
+
+
+def _combined_sink(
+    writer: NormalizedCsvWriter | None, importer: WorkspaceImporter | None
+) -> Callable[[Message], None] | None:
+    if writer is None and importer is None:
+        return None
+    guarded = _guarded_sink(writer) if writer else None
+
+    def sink(message: Message) -> None:
+        if importer is not None:
+            importer.sink(message)
+        if guarded is not None:
+            guarded(message)
+
+    return sink
+
+
+def _conflict_error(exc: ReplacementConflictError) -> AppError:
+    return AppError(
+        "CONVERSATION_REPLACEMENT_CONFLICT",
+        ExitCode.VALIDATION_FAILED,
+        t(
+            "import.error.replacement_conflict",
+            conversations=exc.conversations,
+            files=", ".join(f"#{index}" for index in exc.files),
+        ),
+        hint=t("import.hint.replacement_conflict"),
+    )
 
 
 class _OutputFailure(Exception):
@@ -255,12 +341,12 @@ def _input_error_message(code: str, details: dict[str, object]) -> str:
 
 
 def _render(
-    report: ImportReport,
+    result: _Result,
     show_file_names: bool,
     output: Path | None,
-    written: int | None,
     failure: AppError | None,
 ) -> None:
+    report = result.report
     console = stdout_console()
     totals = report.totals()
     summary = Table(title=t("import.summary.title"), title_justify="left", show_header=False)
@@ -311,8 +397,15 @@ def _render(
             table.add_row(_file_label(file_report, show_file_names), *_rejection(file_report))
         console.print(table)
 
-    if written is not None:
-        console.print(t("import.written", records=written, path=output), highlight=False)
+    _render_outputs(result, output, failure)
+
+
+def _render_outputs(result: _Result, output: Path | None, failure: AppError | None) -> None:
+    console = stdout_console()
+    if result.outcome is not None:
+        _render_workspace(result.outcome)
+    if result.written is not None:
+        console.print(t("import.written", records=result.written, path=output), highlight=False)
     elif output is not None and failure is not None:
         console.print(t("import.not_written"), style="yellow", highlight=False)
     if failure is not None:
@@ -327,3 +420,17 @@ def _rejection(report: FileReport) -> tuple[str, str]:
     assert report.error is not None
     code = report.error.value
     return code, _input_error_message(code, report.error_details)
+
+
+def _render_workspace(outcome: ImportOutcome) -> None:
+    console = stdout_console()
+    if outcome.import_id is None:
+        console.print(t("import.workspace.unchanged"), highlight=False)
+        return
+    table = Table(title=t("import.workspace.title"), title_justify="left", show_header=False)
+    table.add_column()
+    table.add_column(justify="right")
+    for key, value in outcome.to_dict().items():
+        if key != "import_id":
+            table.add_row(t(f"import.workspace.{key}"), f"{value:,}")
+    console.print(table)

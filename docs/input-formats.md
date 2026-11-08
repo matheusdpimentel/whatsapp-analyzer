@@ -179,6 +179,17 @@ invalid options (including an existing output without `--overwrite`, or no input
 when the output cannot be written or moved into place. When one rejection code covers all rejected files, it is the JSON
 `error.code`; otherwise `VALIDATION_FAILED`.
 
+## Storing in a workspace
+
+`--workspace DIR` stores the accepted conversations in a workspace created with `init`. It uses
+the same all-or-nothing rule: nothing is stored unless every file is accepted. In this mode a
+conversation key may appear in only one file per import (`CONVERSATION_ID_CONFLICT` for CSV/XLSX
+as well as TXT). A changed conversation becomes a new version, and a replacement that shares no
+message with the stored version is refused with `CONVERSATION_REPLACEMENT_CONFLICT` (exit 3)
+unless `--replace-unrelated` is given. Records, including duplicates, are stored as imported,
+so `--drop-duplicates` is not accepted with `--workspace`. Versions, identity rules and
+metrics are described in [metrics.md](metrics.md).
+
 ## Normalized CSV
 
 `--normalized-out FILE` writes accepted messages in canonical column order, UTF-8 without BOM,

@@ -15,6 +15,7 @@ internal = "Unexpected internal error ({error_type}). Set WCA_DEBUG=1 to show th
 interrupted = "Interrupted by the user."
 missing_command = "No command given."
 usage_hint = "Run '{prog} --help' to see the available commands and options."
+database = "Database error ({error_type}: {reason}). Check free disk space and file permissions."
 
 [doctor]
 help = "Check the local environment. Sends no data anywhere."
@@ -117,6 +118,8 @@ overwrite = "Replace the normalized CSV file if it already exists."
 drop_duplicates = "Remove exact duplicate messages. By default they are kept and reported, because exports without seconds make genuine repeated messages look identical."
 strict = "Fail when any record is invalid, not only when a whole file is rejected."
 show_file_names = "Show file names in the report. They are hidden by default because they often contain contact names."
+workspace = "Store the accepted conversations in this workspace (see 'init'). Nothing is stored unless every file is accepted."
+replace_unrelated = "Allow a conversation to be replaced by content that shares no message with its current version. Without it, such an import is refused because it is probably a different chat with the same name."
 
 [import.error]
 rejected = "{rejected} of {total} files were rejected; nothing was written."
@@ -126,12 +129,16 @@ output_exists = "The output file '{path}' already exists."
 output_is_directory = "'{path}' is a directory, not a file."
 not_writable = "Could not write the normalized CSV to '{path}': {reason}"
 invalid_override = "Invalid column mapping '{value}'. Use FIELD=COLUMN with a canonical field name."
+drop_duplicates_workspace = "--drop-duplicates cannot be used with --workspace: the workspace keeps the original records."
+replacement_conflict = "{conversations} conversations would be replaced by content that shares no message with the stored version (files {files}). Nothing was stored."
 
 [import.hint]
 mapping = "See docs/input-formats.md for mapping files and the canonical field names."
 overwrite = "Choose another file or pass --overwrite."
 rejected = "Check the rejected files above; --show-file-names lists their names."
 no_inputs = "Pass .txt, .csv or .xlsx files, or a directory that contains them (with --format, only that format's extension is read)."
+drop_duplicates_workspace = "To count exact repeats once in metrics, set duplicates = \"collapse\" in the [metrics] section of analyzer.toml."
+replacement_conflict = "Check whether these files really are newer exports of the same chats. If they are, run again with --replace-unrelated."
 
 [import.summary]
 title = "Import summary"
@@ -200,4 +207,172 @@ AMBIGUOUS_DATE_ORDER = "Day and month order cannot be inferred from the dates. P
 MIXED_DATE_FORMATS = "The file mixes day-first and month-first dates."
 OWNER_REQUIRED = "WhatsApp TXT exports need --owner to tell sent from received messages."
 NO_VALID_RECORDS = "The file contains no valid records."
-CONVERSATION_ID_CONFLICT = "Another TXT file in this import has the same name, so both chats would get the same conversation ID. Rename one of the files."
+CONVERSATION_ID_CONFLICT = "Another file in this import contains a conversation with the same ID (for TXT files: the same file name), so two conversations would be merged. Rename one of the files or import them separately."
+
+[import.workspace]
+title = "Workspace"
+unchanged = "Workspace unchanged: every conversation is identical to its stored version."
+conversations_new = "New conversations"
+conversations_changed = "Changed conversations (new version stored)"
+conversations_unchanged = "Unchanged conversations"
+versions_reactivated = "Earlier versions made current again"
+messages_stored = "Messages stored"
+
+[workspace.option]
+workspace = "Workspace directory. Defaults to WCA_WORKSPACE, then the current directory."
+
+[workspace.error]
+not_found = "No workspace found at '{path}' (analyzer.toml and analyzer.db are required)."
+workspace_exists = "'{path}' already contains a workspace."
+not_a_directory = "'{path}' is not a directory."
+busy = "Another command is writing to the workspace '{path}'."
+directory_not_empty = "'{path}' is not empty. Create the workspace in a new or empty directory, so that its .gitignore keeps the database out of version control."
+not_writable = "Could not create the workspace at '{path}': {reason}"
+
+[workspace.hint]
+init = "Create one with 'whatsapp-analyzer init DIR', or pass --workspace DIR."
+busy = "Wait for it to finish. Reading commands (status, export, metrics compare) can run meanwhile."
+
+[workspace.database_error]
+DATABASE_NOT_FOUND = "The database '{path}' does not exist."
+NOT_A_DATABASE = "'{path}' is not a SQLite database or is damaged."
+NOT_AN_ANALYZER_DATABASE = "'{path}' is a SQLite database that was not created by whatsapp-analyzer."
+DATABASE_TOO_NEW = "'{path}' uses schema version {version}, but this version of the tool supports up to {supported}. Upgrade the tool."
+WAL_UNAVAILABLE = "SQLite cannot use WAL mode for '{path}' (network or read-only file system?)."
+MIGRATION_FAILED = "Could not update the schema of '{path}' ({error}). The database was left unchanged."
+
+[config]
+hint = "See docs/metrics.md for every setting and its allowed values."
+
+[config.error]
+missing_file = "Configuration file '{path}' not found."
+unreadable = "Configuration file '{path}' cannot be read as UTF-8 text."
+syntax = "Configuration file '{path}' is not valid TOML: {reason}"
+unknown_key = "Unknown setting '{key}'."
+wrong_type = "Setting '{key}' must be a {expected}."
+out_of_range = "Setting '{key}' must be between {minimum} and {maximum}."
+invalid_date = "Setting '{key}' must be \"dataset_max\" or a date in YYYY-MM-DD format."
+invalid_choice = "Setting '{key}' must be one of: {choices}."
+threshold_order = "'{key}' must be greater than '{other}', and both must be greater than 0."
+weights_zero = "At least one weight in '{key}' must be greater than 0."
+target_exceeds_lookback = "'{key}' cannot exceed '{limit_key}': the target could never be reached."
+
+[init]
+help = "Create a workspace: configuration file and SQLite database. The directory is ignored by Git."
+created = "Workspace created at {path}."
+next_steps = "Next: whatsapp-analyzer import FILES --workspace {path}, then whatsapp-analyzer metrics run --workspace {path}."
+
+[init.arg]
+directory = "Directory for the workspace. Created if it does not exist."
+
+[metrics]
+help = "Compute deterministic engagement metrics (no LLM) and compare scoring configurations."
+progress = "Scoring conversations {done}/{total}"
+
+[metrics.run]
+help = "Compute raw metrics and scores for the current conversations. Unchanged results are reused."
+new = "Run {run_id} completed. Reference date: {reference_date} ({source})."
+resumed = "Run {run_id} resumed and completed. Reference date: {reference_date} ({source})."
+reused = "Up to date: run {run_id} already has these results. Reference date: {reference_date} ({source}). Use --force for a new run."
+details = "{total} conversations; raw metrics computed: {computed}, reused: {reused}; metrics {metrics_hash}, scoring {scoring_hash}."
+
+[metrics.compare]
+help = "Compare the levels of two runs (aggregate counts only)."
+title = "Comparison"
+partial = "Run {run_id} is partial: it does not cover every conversation."
+compared = "Conversations compared (same data version)"
+agreement = "Same level in both runs"
+mean_absolute_score_difference = "Mean absolute score difference"
+only_in_a = "Only in the first run"
+only_in_b = "Only in the second run"
+different_data_version = "Not compared: data changed between the runs"
+changed_settings = "Changed settings"
+matrix = "Level transitions (rows: run {run_a}, columns: run {run_b})"
+
+[metrics.option]
+config = "Read the settings from this file instead of the workspace's analyzer.toml."
+reference_date = "Reference date (YYYY-MM-DD) for this run, overriding the configuration."
+force = "Create a new run even if an identical complete run exists."
+
+[metrics.arg]
+run_a = "First run ID (see 'status')."
+run_b = "Second run ID."
+
+[metrics.error]
+no_conversations = "The workspace has no conversations to score."
+no_runs = "The workspace has no runs yet."
+run_not_found = "Run {run_id} does not exist."
+
+[metrics.hint]
+no_conversations = "Import conversations first: whatsapp-analyzer import FILES --workspace DIR."
+no_runs = "Create one with: whatsapp-analyzer metrics run."
+status = "List the runs with: whatsapp-analyzer status."
+
+[metrics.reference_source]
+option = "from --reference-date"
+config = "fixed in the configuration"
+dataset_max = "latest message in the workspace"
+
+[metrics.levels]
+title = "Levels"
+
+[metrics.levels.column]
+level = "Level"
+count = "Conversations"
+
+[status]
+help = "Show the workspace contents and recent runs (aggregate counts only)."
+title = "Workspace"
+conversations = "Conversations"
+groups = "Group conversations (not comparable)"
+with_earlier_versions = "Conversations with earlier versions"
+messages_current = "Messages (current versions)"
+versions_superseded = "Superseded versions kept"
+imports = "Imports"
+metric_configs = "Metric configurations"
+runs_total = "Runs"
+formats = "Conversations by format"
+no_runs = "No runs yet. Run: whatsapp-analyzer metrics run."
+
+[status.warning]
+several_formats = "{count} conversation keys exist in more than one format. They are kept as separate conversations; importing the same chats from two exporters counts them twice."
+
+[status.runs]
+title = "Recent runs"
+
+[status.runs.column]
+id = "Run"
+status = "Status"
+reference_date = "Reference date"
+scored = "Scored"
+data = "Data"
+
+[status.run_status]
+running = "running"
+incomplete = "incomplete"
+complete = "complete"
+
+[status.data]
+current = "current"
+outdated = "outdated"
+
+[export]
+help = "Export the metrics and scores of a run to CSV, with a .meta.json file describing it."
+written = "{rows} rows of run {run_id} written to {path}."
+
+[export.option]
+out = "CSV file to write. Metadata goes to FILE.meta.json."
+run = "Run to export. Defaults to the most recent run."
+overwrite = "Replace the output files if they exist."
+
+[export.error]
+output_exists = "The output file '{path}' already exists."
+invalid_path = "Cannot write to '{path}': it is a directory or its parent directory does not exist."
+not_writable = "Could not write '{path}': {reason}"
+
+[export.hint]
+overwrite = "Choose another file or pass --overwrite."
+
+[export.warning]
+partial = "This run is {status}: the export contains only the conversations scored so far."
+outdated = "Data changed after this run: {superseded} rows were computed from earlier conversation versions (column data_version)."

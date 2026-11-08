@@ -34,6 +34,7 @@ PROGRESS_EVERY = 25_000
 
 Sink = Callable[[Message], None]
 Progress = Callable[[int, int, int], None]  # file index, file count, records read in that file
+FileStart = Callable[[FileReport, Path], None]  # called once the file's format is known
 
 
 @dataclass(frozen=True)
@@ -70,6 +71,7 @@ def run_import(
     options: ImportOptions,
     sink: Sink | None = None,
     progress: Progress | None = None,
+    on_file: FileStart | None = None,
 ) -> ImportReport:
     files = collect_inputs(paths, options.format)
     report = ImportReport(duplicates_removed=options.drop_duplicates)
@@ -78,7 +80,7 @@ def run_import(
         file_report = FileReport(index=index, name=str(path))
         report.files.append(file_report)
         try:
-            _import_file(path, file_report, options, validator, (index, len(files)))
+            _import_file(path, file_report, options, validator, (index, len(files)), on_file)
         except InputError as error:
             file_report.error = error.code
             file_report.error_details = error.details
@@ -91,10 +93,13 @@ def _import_file(
     options: ImportOptions,
     validator: "_Validator",
     position: tuple[int, int],
+    on_file: FileStart | None,
 ) -> None:
     report.format = options.format or detect_format(path, options.encoding)
     if report.format in (InputFormat.IMAZING_TXT, InputFormat.WHATSAPP_TXT):
         validator.claim_conversation_id(path.stem, report.index)
+    if on_file:
+        on_file(report, path)
     validator.consume(_items(path, report.format, options), report, position)
     if report.records_valid == 0:
         raise InputError(InputErrorCode.NO_VALID_RECORDS)

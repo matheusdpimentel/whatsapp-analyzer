@@ -31,3 +31,15 @@ def split_global_options(args: Sequence[str]) -> tuple[list[str], str | None]:
         else:
             return options, arg
     return options, None
+
+
+COMMAND_GROUPS = {"metrics": frozenset({"run", "compare"})}
+
+
+def command_name(args: Sequence[str], command: str | None) -> str | None:
+    """`command`, or `group subcommand` for grouped commands (e.g. "metrics run")."""
+    if command not in COMMAND_GROUPS:
+        return command
+    following = list(args[list(args).index(command) + 1 :])
+    subcommand = next((arg for arg in following if arg in COMMAND_GROUPS[command]), None)
+    return f"{command} {subcommand}" if subcommand else command

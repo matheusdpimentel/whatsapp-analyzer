@@ -63,7 +63,7 @@ def set_language(language: str) -> None:
     _current_language = language
 
 
-def t(key: str, **params: object) -> str:
+def t(key: str, /, **params: object) -> str:
     """Translate `key` into the current language and fill in `params`."""
     template = load_catalog(_current_language)[key]
     return template.format(**params) if params else template

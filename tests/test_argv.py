@@ -1,6 +1,6 @@
 import pytest
 
-from whatsapp_analyzer.cli.argv import split_global_options
+from whatsapp_analyzer.cli.argv import command_name, split_global_options
 
 
 @pytest.mark.parametrize(
@@ -18,3 +18,16 @@ from whatsapp_analyzer.cli.argv import split_global_options
 )
 def test_split_global_options(args: list[str], options: list[str], command: str | None) -> None:
     assert split_global_options(args) == (options, command)
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        (["metrics", "run", "-w", "x"], "metrics run"),
+        (["metrics", "-w", "dir", "compare", "1", "2"], "metrics compare"),
+        (["metrics", "-w", "dir"], "metrics"),
+        (["status", "-w", "run"], "status"),
+    ],
+)
+def test_command_name_for_groups(args: list[str], expected: str) -> None:
+    assert command_name(args, args[0]) == expected

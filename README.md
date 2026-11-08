@@ -4,8 +4,9 @@ A local, terminal-based tool for processing, analyzing and classifying WhatsApp 
 exports. It computes deterministic engagement metrics and can optionally classify conversations
 with an LLM provider that you configure.
 
-> **Status: early development (milestone 2).** Conversations can be imported, validated and
-> normalized; metrics and LLM analysis come next. Architecture decisions are recorded in
+> **Status: early development (milestone 3).** Conversations can be imported, validated and
+> stored in a local workspace, and deterministic engagement metrics can be computed, compared
+> and exported. LLM analysis comes next. Architecture decisions are recorded in
 > [`docs/adr/`](docs/adr/).
 
 This project is not affiliated with, endorsed by, or sponsored by WhatsApp or Meta.
@@ -49,6 +50,25 @@ any CSV/XLSX file with a column mapping. Every import prints a validation report
 and finding codes, never message text. Details, the canonical schema, mapping files and
 troubleshooting are in [`docs/input-formats.md`](docs/input-formats.md).
 
+### Engagement metrics
+
+```bash
+whatsapp-analyzer init ./analysis                          # workspace: analyzer.toml + analyzer.db
+whatsapp-analyzer import ./exports --workspace ./analysis  # store conversations (versioned)
+whatsapp-analyzer metrics run -w ./analysis                # frequency, reciprocity, initiative, recency
+whatsapp-analyzer metrics compare 1 2 -w ./analysis        # compare two scoring configurations
+whatsapp-analyzer status -w ./analysis
+whatsapp-analyzer export -w ./analysis --out scores.csv    # + scores.csv.meta.json
+```
+
+The metrics describe observable activity in a conversation, never interest, sentiment or
+personal attributes. They are deterministic and computed without any LLM. Levels are `HIGH`,
+`MEDIUM`, `LOW`, `INSUFFICIENT_DATA` and `NOT_COMPARABLE` (group chats). Raw metrics are stored
+apart from scores, so changing weights or thresholds re-scores without recomputing them.
+Re-importing unchanged conversations does nothing, and earlier results remain traceable to the
+data version they were computed from. Definitions, configuration, caching rules and the export
+format are in [`docs/metrics.md`](docs/metrics.md).
+
 ### Synthetic demo data
 
 You can try the tool without real conversations:
@@ -90,9 +110,10 @@ Failures add an `error` object with a stable English `code`, a localized `messag
 | 9 | Environment check failed |
 | 10 | Calibration required before a full LLM run |
 | 11 | Output could not be written (permissions, invalid path, full disk) |
-| 130 | Interrupted by the user |
+| 130 | Interrupted by the user (an interrupted `metrics run` resumes when run again) |
 
-Codes 4 to 8 and 10 are reserved for commands that are not implemented yet.
+Codes 5 to 8 and 10 are reserved for commands that are not implemented yet. Code 4 covers
+invalid `analyzer.toml` files and missing or incompatible workspaces.
 
 ## Development
 
@@ -108,7 +129,9 @@ uv run mypy              # type check (strict)
 The analyzer runs locally and sends no data anywhere. Reports show counts and codes, never
 message text; file names are hidden unless `--show-file-names` is given. `doctor` only reports
 whether provider credentials are set, never their values. A normalized CSV contains your
-messages: keep it as private as the original exports. Keep API keys in environment variables or a local
+messages: keep it as private as the original exports. The same applies to a workspace
+(`analyzer.db` stores the messages) and to score exports, which contain conversation keys.
+Workspaces are created readable only by you and with a `.gitignore` that excludes everything. Keep API keys in environment variables or a local
 `.env` file (see `.env.example`); never pass them as command-line arguments.
 
 ## License

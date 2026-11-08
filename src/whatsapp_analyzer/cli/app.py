@@ -1,5 +1,6 @@
 import io
 import os
+import sqlite3
 import sys
 from collections.abc import Sequence
 from typing import Annotated
@@ -7,10 +8,14 @@ from typing import Annotated
 import typer
 
 from whatsapp_analyzer import __version__
-from whatsapp_analyzer.cli.argv import split_global_options
+from whatsapp_analyzer.cli.argv import command_name, split_global_options
+from whatsapp_analyzer.cli.commands import metrics
 from whatsapp_analyzer.cli.commands.demo_data import demo_data
 from whatsapp_analyzer.cli.commands.doctor import doctor
+from whatsapp_analyzer.cli.commands.export import export
 from whatsapp_analyzer.cli.commands.import_ import import_command
+from whatsapp_analyzer.cli.commands.init import init
+from whatsapp_analyzer.cli.commands.status import status
 from whatsapp_analyzer.cli.output import CliState, error_payload, print_error, write_json
 from whatsapp_analyzer.errors import AppError
 from whatsapp_analyzer.exit_codes import ExitCode
@@ -74,7 +79,14 @@ def build_app() -> typer.Typer:
 
     app.command("doctor", help=t("doctor.help"))(doctor)
     app.command("demo-data", help=t("demo_data.help"))(demo_data)
+    app.command("init", help=t("init.help"))(init)
     app.command("import", help=t("import.help"))(import_command)
+    metrics_app = typer.Typer(help=t("metrics.help"), no_args_is_help=True)
+    metrics_app.command("run", help=t("metrics.run.help"))(metrics.run)
+    metrics_app.command("compare", help=t("metrics.compare.help"))(metrics.compare)
+    app.add_typer(metrics_app, name="metrics")
+    app.command("status", help=t("status.help"))(status)
+    app.command("export", help=t("export.help"))(export)
     return app
 
 
@@ -101,6 +113,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     _never_fail_on_output_encoding()
     args = list(sys.argv[1:] if argv is None else argv)
     global_options, command = split_global_options(args)
+    command = command_name(args, command)
     set_language(detect_language(global_options, os.environ))
     json_mode = JSON_OPTION in global_options
 
@@ -122,6 +135,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     except AppError as exc:
         return _report(json_mode, command, exc)
+    except sqlite3.OperationalError as exc:  # disk full, I/O error, database locked too long
+        if os.environ.get(DEBUG_ENV_VAR) == "1":
+            raise
+        error = AppError(
+            "DATABASE_ERROR",
+            ExitCode.OUTPUT_ERROR,
+            t("cli.error.database", error_type=type(exc).__name__, reason=_sqlite_reason(exc)),
+        )
+        return _report(json_mode, command, error)
     except Exception as exc:
         if os.environ.get(DEBUG_ENV_VAR) == "1":
             raise
@@ -133,6 +155,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return _report(json_mode, command, error)
     return int(result) if isinstance(result, int) else ExitCode.OK
+
+
+def _sqlite_reason(exc: sqlite3.OperationalError) -> str:
+    # SQLite's own error names (e.g. SQLITE_FULL) contain no data; the message text might.
+    return getattr(exc, "sqlite_errorname", None) or "SQLITE_ERROR"
 
 
 def _report(json_mode: bool, command: str | None, error: AppError) -> int:
