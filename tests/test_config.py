@@ -183,3 +183,26 @@ def test_llm_settings_do_not_change_metric_hashes() -> None:
     reference = date(2026, 1, 31)
     assert plain.metrics.resolved(reference) == tuned.metrics.resolved(reference)
     assert plain.scoring == tuned.scoring
+
+
+def test_llm_limits_defaults_and_validation() -> None:
+    limits = parse_settings({}).llm.limits
+    assert (limits.concurrency, limits.requests_per_minute, limits.tokens_per_minute) == (
+        4,
+        60,
+        None,
+    )
+    assert (limits.max_attempts, limits.max_tokens, limits.max_cost) == (3, None, None)
+    custom = parse_settings(
+        {"llm": {"limits": {"max_cost": "1.50", "max_tokens": 1000}}}
+    ).llm.limits
+    assert str(custom.max_cost) == "1.50" and custom.max_tokens == 1000
+    for bad, kind in (
+        ({"max_cost": 1.5}, "wrong_type"),
+        ({"max_cost": "-1"}, "out_of_range"),
+        ({"concurrency": 0}, "out_of_range"),
+        ({"budget": 5}, "unknown_key"),
+    ):
+        with pytest.raises(ConfigError) as info:
+            parse_settings({"llm": {"limits": bad}})
+        assert info.value.kind == kind

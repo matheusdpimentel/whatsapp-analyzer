@@ -16,6 +16,7 @@ silently corrected. Missing keys take the documented defaults.
 import tomllib
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime
+from decimal import Decimal, InvalidOperation
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
@@ -99,11 +100,25 @@ class ContextSettings:
 
 
 @dataclass(frozen=True)
+class LimitSettings:
+    """Runner limits. `None` means "no limit". Token limits use local estimates for
+    reservations, so they are conservative guides, not guarantees, for real providers."""
+
+    concurrency: int = 4
+    requests_per_minute: int | None = 60
+    tokens_per_minute: int | None = None
+    max_attempts: int = 3
+    max_tokens: int | None = None
+    max_cost: Decimal | None = None
+
+
+@dataclass(frozen=True)
 class LlmSettings:
     provider: str = "fake"
     model: str = "fake-classifier"
     prompt: str = "engagement-classification"  # template id, id@version or a .md path
     context: ContextSettings = field(default_factory=ContextSettings)
+    limits: LimitSettings = field(default_factory=LimitSettings)
 
 
 @dataclass(frozen=True)
@@ -161,6 +176,16 @@ max_messages = 200
 max_context_tokens = 6000   # estimated, not exact
 max_message_chars = 1000
 include_groups = false
+
+[llm.limits]
+# Runner limits (see docs/runner.md). tokens_per_minute, max_tokens and max_cost have no
+# limit when omitted; concurrency, requests_per_minute and max_attempts use these defaults.
+concurrency = 4
+requests_per_minute = 60
+# tokens_per_minute = 100000
+max_attempts = 3            # per job, only for retries that are safe
+# max_tokens = 200000       # whole run, conservative local estimates
+# max_cost = "1.00"         # whole run; needs a complete price entry
 """
 
 
@@ -195,7 +220,7 @@ def parse_settings(data: dict[str, Any]) -> Settings:
 def _parse_llm(table: dict[str, Any]) -> LlmSettings:
     path = "llm."
     defaults = LlmSettings()
-    _reject_unknown(table, {"provider", "model", "prompt", "context"}, path)
+    _reject_unknown(table, {"provider", "model", "prompt", "context", "limits"}, path)
     provider = table.get("provider", defaults.provider)
     if provider not in SUPPORTED_PROVIDERS:
         raise ConfigError(
@@ -225,6 +250,45 @@ def _parse_llm(table: dict[str, Any]) -> LlmSettings:
             ),
             include_groups=_boolean(context, "include_groups", context_path, base.include_groups),
         ),
+        limits=_parse_limits(_table(table, "limits", path), f"{path}limits."),
+    )
+
+
+def _parse_limits(table: dict[str, Any], path: str) -> LimitSettings:
+    base = LimitSettings()
+    _reject_unknown(table, set(asdict(base)), path)
+
+    def optional_integer(name: str, default: int | None, maximum: int) -> int | None:
+        if name not in table:
+            return default
+        return _integer(table, name, path, 0, 1, maximum)
+
+    max_cost = None
+    if "max_cost" in table:
+        value = table["max_cost"]
+        if not isinstance(value, str):
+            raise ConfigError(
+                "wrong_type", key=f"{path}max_cost", expected='decimal string, e.g. "1.50"'
+            )
+        try:
+            max_cost = Decimal(value)
+        except InvalidOperation as exc:
+            raise ConfigError(
+                "wrong_type", key=f"{path}max_cost", expected="decimal string"
+            ) from exc
+        if not max_cost.is_finite() or max_cost < 0:
+            raise ConfigError("out_of_range", key=f"{path}max_cost", minimum=0, maximum="any")
+    return LimitSettings(
+        concurrency=_integer(table, "concurrency", path, base.concurrency, 1, 64),
+        requests_per_minute=optional_integer(
+            "requests_per_minute", base.requests_per_minute, 100_000
+        ),
+        tokens_per_minute=optional_integer(
+            "tokens_per_minute", base.tokens_per_minute, 100_000_000
+        ),
+        max_attempts=_integer(table, "max_attempts", path, base.max_attempts, 1, 10),
+        max_tokens=optional_integer("max_tokens", base.max_tokens, 10_000_000_000),
+        max_cost=max_cost,
     )
 
 

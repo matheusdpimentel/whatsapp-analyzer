@@ -314,7 +314,7 @@ def _raw_metrics(
 
     groups = {v.version_id: v.is_group for v in missing}
     computed_at = utc_now()
-    for version_id, messages in _messages_of(connection, list(groups)):
+    for version_id, messages in messages_of(connection, list(groups)):
         raw = compute_raw_metrics(
             messages, settings.metrics, result.reference_date, groups[version_id]
         )
@@ -329,7 +329,7 @@ def _raw_metrics(
     return stored
 
 
-def _messages_of(
+def messages_of(
     connection: sqlite3.Connection, version_ids: list[int]
 ) -> Iterator[tuple[int, list[StoredMessage]]]:
     placeholders = ",".join("?" * len(version_ids))

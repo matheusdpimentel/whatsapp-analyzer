@@ -30,6 +30,8 @@ class CallTelemetry:
     usage: Usage
     cost: CostEstimate
     latency_ms: int
+    request_sent: bool | None = None  # from ProviderError: False = never left the machine
+    retry_after_seconds: float | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -53,4 +55,6 @@ class CallTelemetry:
             "usage": self.usage.to_dict(),
             "cost": self.cost.to_dict(),
             "latency_ms": self.latency_ms,
+            "request_sent": self.request_sent,
+            "retry_after_seconds": self.retry_after_seconds,
         }

@@ -4,11 +4,11 @@ A local, terminal-based tool for processing, analyzing and classifying WhatsApp 
 exports. It computes deterministic engagement metrics and can optionally classify conversations
 with an LLM provider that you configure.
 
-> **Status: early development (milestone 4).** Conversations can be imported, validated and
-> stored in a local workspace, and deterministic engagement metrics can be computed, compared
-> and exported. The offline LLM core (prompts, context preparation, validation, token and cost
-> accounting) can be previewed locally. Real providers come in later milestones. Architecture decisions are recorded in
-> [`docs/adr/`](docs/adr/).
+> **Status: early development (milestone 5).** Conversations can be imported, validated and
+> stored in a local workspace; deterministic engagement metrics can be computed, compared and
+> exported; and LLM classification runs as a persistent, resumable, budgeted job with the
+> offline fake provider. Real providers come in milestone 6. Architecture decisions are
+> recorded in [`docs/adr/`](docs/adr/).
 
 This project is not affiliated with, endorsed by, or sponsored by WhatsApp or Meta.
 
@@ -78,7 +78,18 @@ whatsapp-analyzer llm preview KEY -w ./analysis        # what would be sent: cou
 whatsapp-analyzer llm preview KEY -w ./analysis --simulate   # run the offline fake provider
 ```
 
-Nothing is sent to any provider yet. The preview shows no message content unless you ask for it
+```bash
+whatsapp-analyzer llm run -w ./analysis --max-tokens 200000   # checkpointed, resumable run
+whatsapp-analyzer llm status -w ./analysis                    # jobs, billing, tokens, costs
+whatsapp-analyzer llm export -w ./analysis --out llm.csv      # partial-aware export
+```
+
+Runs checkpoint every attempt before calling the provider, resume after Ctrl+C or a crash,
+reuse earlier results, never resend an attempt whose outcome is unknown without
+`--resend-unknown`, and stop before exceeding token or cost budgets. See
+[`docs/runner.md`](docs/runner.md).
+
+Nothing is sent to any provider yet: the only provider is an offline fake. The preview shows no message content unless you ask for it
 with `--show-content` or `--out` and confirm. Identifiers are masked, but masking is
 pseudonymization, not anonymization. See [`docs/llm.md`](docs/llm.md).
 
@@ -125,7 +136,8 @@ Failures add an `error` object with a stable English `code`, a localized `messag
 | 11 | Output could not be written (permissions, invalid path, full disk) |
 | 130 | Interrupted by the user (an interrupted `metrics run` resumes when run again) |
 
-Codes 5 to 8 and 10 are reserved for commands that are not implemented yet. Code 4 covers
+Codes 5 to 8 are used by `llm run` (see [`docs/runner.md`](docs/runner.md)); code 10 is
+reserved for a later milestone. Code 4 covers
 invalid `analyzer.toml` files and missing or incompatible workspaces.
 
 ## Development

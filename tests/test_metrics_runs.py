@@ -17,6 +17,7 @@ from whatsapp_analyzer.exit_codes import ExitCode
 from whatsapp_analyzer.metrics.reports import compare_runs, export_run, workspace_status
 from whatsapp_analyzer.metrics.runner import ReferenceSource, RunMode, run_metrics
 from whatsapp_analyzer.store.db import transaction
+from whatsapp_analyzer.store.migrations import LATEST_VERSION
 from whatsapp_analyzer.workspace import Workspace
 
 SETTINGS = Settings()
@@ -428,7 +429,7 @@ def test_busy_workspace(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> N
 
 def test_init_command(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     code, payload = run_cli(["init", str(tmp_path / "ws")], capsys)
-    assert code == ExitCode.OK and data_of(payload)["schema_version"] == 1
+    assert code == ExitCode.OK and data_of(payload)["schema_version"] == LATEST_VERSION
     code, payload = run_cli(["init", str(tmp_path / "ws")], capsys)
     assert (code, payload["error"]["code"]) == (ExitCode.USAGE_ERROR, "WORKSPACE_EXISTS")  # type: ignore[index]
 

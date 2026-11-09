@@ -482,3 +482,84 @@ manifest_mismatch = "O template embutido '{file}' não corresponde à entrada do
 unknown_template = "Nenhum template '{reference}' encontrado."
 unknown_template_with_invalid = "Nenhum template válido '{reference}' encontrado. Estes arquivos de template são inválidos e foram ignorados: {invalid}."
 duplicate_template = "O template '{reference}' está definido mais de uma vez."
+
+[llm.run]
+help = "Classifica conversas com o provedor configurado (milestone 5: só o provedor falso offline), com checkpoints, retomada, reaproveitamento, limites de taxa e orçamentos."
+progress = "Jobs de LLM {done}/{total} (falhas {failed}, aguardando reconciliação {reconcile})"
+
+[llm.run.option]
+config = "Lê as configurações deste arquivo em vez do analyzer.toml do workspace."
+conversation = "Só esta chave de conversa. Pode ser repetido. A seleção fica congelada no run."
+run = "Retoma ou reenfileira este ID de run em vez do run que corresponde à configuração e ao escopo atuais."
+force = "Planeja um novo run mesmo que exista um run com a mesma configuração e escopo. Requisições idênticas continuam reaproveitadas, salvo com --no-reuse."
+reuse = "Reaproveita resultados de sucesso de requisições idênticas (mesmo provedor e request id). --no-reuse chama o provedor de novo; não cria um novo run por si só."
+retry_failed = "Envia de novo os jobs que falharam. Jobs aguardando reconciliação nunca são incluídos."
+resend_unknown = "Envia de novo os jobs aguardando reconciliação. A tentativa anterior pode já ter sido processada e cobrada."
+concurrency = "Máximo de requisições simultâneas (padrão de [llm.limits], 4)."
+rpm = "Máximo de requisições por minuto (padrão de [llm.limits], 60)."
+tpm = "Máximo de tokens estimados por minuto (padrão: sem limite)."
+max_tokens = "Para antes que os tokens estimados e informados do run, incluindo reservas, passem deste valor."
+max_cost = "Não despacha uma tentativa quando o custo do run mais as reservas de pior caso (baseadas em tokens estimados) passariam deste valor. Exige uma entrada de preço completa."
+max_attempts = "Máximo de tentativas por job para retries seguros (padrão 3)."
+fake_scenario = "Comportamento do provedor falso para desenvolvimento e demonstrações: valid, review, invalid_json, truncated, refusal, error:TIPO, ..."
+events = "Grava um evento JSON por linha neste arquivo, ou '-' para stderr (só identificadores e códigos)."
+
+[llm.run.error]
+max_cost = "--max-cost inválido '{value}': use um valor decimal não negativo, como 1.50."
+fake_scenario = "Cenário falso desconhecido '{value}'. Opções: {choices} (erros como error:TIPO)."
+no_conversations = "Nenhuma conversa selecionada (confira as chaves de --conversation e as importações)."
+budget_unverifiable = "Foi pedido um limite de custo, mas o preço deste provedor e modelo está ausente ou incompleto, então nenhuma reserva de pior caso pode ser calculada."
+config_changed = "A configuração difere daquela com que este run foi planejado."
+no_runs = "O workspace ainda não tem runs de LLM."
+not_found = "O run de LLM {run_id} não existe."
+conflicting_options = "--run seleciona um run existente: --conversation e --force não podem ser combinados com ele."
+
+[llm.run.hint]
+budget_unverifiable = "Adicione uma entrada completa (input, output, cache_read, cache_write) ao pricing.toml, ou use --max-tokens."
+config_changed = "Rode sem --run para planejar um novo run com a configuração atual."
+
+[llm.run.outcome]
+COMPLETED_WITH_FAILURES = "O run terminou, mas alguns jobs falharam ou aguardam reconciliação. Veja 'llm status'."
+BUDGET_REACHED = "O run parou porque o pior caso estimado da próxima tentativa não caberia no orçamento ({reason}). Retome com um limite maior (--max-tokens ou --max-cost)."
+RUN_PAUSED_ACCOUNT_ERROR = "O run foi pausado por um erro de conta do provedor ({reason}). Corrija e rode de novo para retomar."
+RUN_INTERRUPTED = "O run foi interrompido ({reason}). Rode o mesmo comando de novo para retomar."
+
+[llm.run.mode]
+new = "Run {run_id} planejado e executado."
+resumed = "Run {run_id} retomado."
+up_to_date = "Atualizado: o run {run_id} já tem estes resultados. Use --force para um novo run."
+unchanged = "O run {run_id} não tem jobs pendentes; jobs com falha ou não reconciliados só são reenviados com --retry-failed ou --resend-unknown."
+
+[llm.status]
+help = "Mostra um run de LLM: jobs por status, tentativas por cobrança, tokens, custos e reservas (sem conteúdo)."
+title = "Run de LLM {run_id}"
+partial_cost = "(parcial: {count} tentativas cobradas sem custo)"
+stale = "Este run está marcado como em execução, mas nenhum processo detém o workspace: ele caiu. O próximo llm run o recupera."
+note = "As reservas usam estimativas locais de tokens: um guia conservador, não uma garantia para provedores reais."
+
+[llm.status.option]
+run = "ID do run. Padrão: o run usado mais recentemente."
+
+[llm.status.row]
+status = "Status"
+tokens_reported = "Tokens informados pelo provedor (entrada / saída)"
+tokens_estimated = "Tokens estimados localmente (entrada / saída)"
+cost = "Custo conhecido"
+in_flight = "Reservado por tentativas em andamento (tokens)"
+unknown = "Reservado por tentativas com cobrança desconhecida (tokens)"
+committed_tokens = "Tokens comprometidos (consumidos + reservados) / limite"
+committed_cost = "Custo comprometido / limite"
+
+[llm.status.job]
+succeeded = "Concluídos"
+reused = "Reaproveitados"
+failed = "Com falha"
+awaiting_reconciliation = "Aguardando reconciliação"
+skipped = "Ignorados"
+pending = "Pendentes"
+
+[llm.export]
+help = "Exporta os jobs de um run de LLM para CSV com um arquivo .meta.json (rótulos, códigos, contagens; sem conteúdo)."
+written = "{rows} jobs do run de LLM {run_id} gravados em {path}."
+partial = "Este run está {status}: a exportação é um snapshot parcial."
+reconcile = "{count} jobs aguardam reconciliação (coluna needs_reconciliation)."

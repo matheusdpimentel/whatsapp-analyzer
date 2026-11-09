@@ -163,8 +163,12 @@ class ProviderError(Exception):
         http_status: int | None = None,
         provider_code: str | None = None,
         retry_after_seconds: float | None = None,
+        request_sent: bool | None = None,
     ) -> None:
+        """`request_sent`: False when the adapter knows the request never left the machine
+        (for example a connection that could not be opened); None when it cannot tell."""
         self.kind = kind
+        self.request_sent = request_sent
         self.safe_message = redact(safe_message)
         self.http_status = http_status
         self.provider_code = redact(provider_code) if provider_code else None

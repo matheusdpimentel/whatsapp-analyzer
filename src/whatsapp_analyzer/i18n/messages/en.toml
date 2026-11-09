@@ -482,3 +482,84 @@ manifest_mismatch = "Built-in template '{file}' does not match its manifest entr
 unknown_template = "No template '{reference}' found."
 unknown_template_with_invalid = "No valid template '{reference}' found. These template files are invalid and were skipped: {invalid}."
 duplicate_template = "Template '{reference}' is defined more than once."
+
+[llm.run]
+help = "Classify conversations with the configured provider (milestone 5: offline fake provider only), with checkpoints, resumption, reuse, rate limits and budgets."
+progress = "LLM jobs {done}/{total} (failed {failed}, awaiting reconciliation {reconcile})"
+
+[llm.run.option]
+config = "Read the settings from this file instead of the workspace's analyzer.toml."
+conversation = "Only this conversation key. Can be repeated. The selection is frozen in the run."
+run = "Resume or requeue this run ID instead of the run matching the current configuration and scope."
+force = "Plan a new run even if a run with the same configuration and scope exists. Identical requests are still reused unless --no-reuse is given."
+reuse = "Reuse earlier successful results of identical requests (same provider and request id). --no-reuse calls the provider again; it does not create a new run by itself."
+retry_failed = "Send failed jobs again. Jobs awaiting reconciliation are never included."
+resend_unknown = "Send jobs awaiting reconciliation again. Their earlier attempt may already have been processed and billed."
+concurrency = "Maximum requests in flight (default from [llm.limits], 4)."
+rpm = "Maximum requests per minute (default from [llm.limits], 60)."
+tpm = "Maximum estimated tokens per minute (default: no limit)."
+max_tokens = "Stop before the run's estimated and reported tokens, including reservations, would exceed this."
+max_cost = "Do not dispatch an attempt when the run's cost plus worst-case reservations (based on estimated tokens) would exceed this amount. Needs a complete price entry."
+max_attempts = "Maximum attempts per job for retries that are safe (default 3)."
+fake_scenario = "Fake provider behavior for development and demos: valid, review, invalid_json, truncated, refusal, error:KIND, ..."
+events = "Write one JSON event per line to this file, or '-' for stderr (identifiers and codes only)."
+
+[llm.run.error]
+max_cost = "Invalid --max-cost '{value}': use a non-negative decimal amount such as 1.50."
+fake_scenario = "Unknown fake scenario '{value}'. Choices: {choices} (errors as error:KIND)."
+no_conversations = "No conversations are selected (check --conversation keys and imports)."
+budget_unverifiable = "A cost limit was requested, but the price of this provider and model is missing or incomplete, so no worst-case reservation can be computed."
+config_changed = "The configuration differs from the one this run was planned with."
+no_runs = "The workspace has no LLM runs yet."
+not_found = "LLM run {run_id} does not exist."
+conflicting_options = "--run selects an existing run: --conversation and --force cannot be combined with it."
+
+[llm.run.hint]
+budget_unverifiable = "Add a complete entry (input, output, cache_read, cache_write) to pricing.toml, or use --max-tokens."
+config_changed = "Run without --run to plan a new run with the current configuration."
+
+[llm.run.outcome]
+COMPLETED_WITH_FAILURES = "The run finished, but some jobs failed or await reconciliation. See 'llm status'."
+BUDGET_REACHED = "The run stopped because the next attempt's estimated worst case would not fit the budget ({reason}). Resume with a higher limit (--max-tokens or --max-cost)."
+RUN_PAUSED_ACCOUNT_ERROR = "The run was paused by a provider account error ({reason}). Fix it and run again to resume."
+RUN_INTERRUPTED = "The run was interrupted ({reason}). Run the same command again to resume."
+
+[llm.run.mode]
+new = "Run {run_id} planned and executed."
+resumed = "Run {run_id} resumed."
+up_to_date = "Up to date: run {run_id} already has these results. Use --force for a new run."
+unchanged = "Run {run_id} has no pending jobs; failed or unreconciled jobs are only sent again with --retry-failed or --resend-unknown."
+
+[llm.status]
+help = "Show an LLM run: jobs by status, attempts by billing, tokens, costs and reservations (no content)."
+title = "LLM run {run_id}"
+partial_cost = "(partial: {count} billed attempts without a cost)"
+stale = "This run is marked running but no process holds the workspace: it crashed. The next llm run recovers it."
+note = "Reservations use local token estimates: a conservative guide, not a guarantee for real providers."
+
+[llm.status.option]
+run = "Run ID. Defaults to the run used most recently."
+
+[llm.status.row]
+status = "Status"
+tokens_reported = "Tokens reported by the provider (input / output)"
+tokens_estimated = "Tokens estimated locally (input / output)"
+cost = "Known cost"
+in_flight = "Reserved by attempts in flight (tokens)"
+unknown = "Reserved by attempts with unknown billing (tokens)"
+committed_tokens = "Committed tokens (consumed + reserved) / limit"
+committed_cost = "Committed cost / limit"
+
+[llm.status.job]
+succeeded = "Succeeded"
+reused = "Reused"
+failed = "Failed"
+awaiting_reconciliation = "Awaiting reconciliation"
+skipped = "Skipped"
+pending = "Pending"
+
+[llm.export]
+help = "Export the jobs of an LLM run to CSV with a .meta.json file (labels, codes, counts; no content)."
+written = "{rows} jobs of LLM run {run_id} written to {path}."
+partial = "This run is {status}: the export is a partial snapshot."
+reconcile = "{count} jobs await reconciliation (column needs_reconciliation)."

@@ -362,7 +362,7 @@ require an explicit authorization from the user:
 
 ## Not in milestone 4
 
-Real providers and paid calls (milestone 6); runner, scheduling, queues, concurrency limits,
-retries and persistence of calls (milestone 5); second-model review and consolidation
+Real providers and paid calls (milestone 6); the runner with scheduling, concurrency limits,
+retries and persistence of calls arrived in milestone 5 ([runner.md](runner.md)); second-model review and consolidation
 (milestone 7); calibration and human feedback (milestone 8); optionally sending deterministic
 metrics to the model, which can be added later as an explicit, hashed template variable.

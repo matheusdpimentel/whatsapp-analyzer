@@ -7,9 +7,7 @@ counts only: no conversation keys, senders or message text.
 
 import csv
 import json
-import os
 import sqlite3
-import tempfile
 from collections import Counter
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
@@ -17,6 +15,7 @@ from datetime import datetime
 from pathlib import Path
 
 from whatsapp_analyzer import __version__
+from whatsapp_analyzer.fileio import atomic_write_files
 from whatsapp_analyzer.hashing import short
 from whatsapp_analyzer.ingest.csv_export import escape_formula
 from whatsapp_analyzer.metrics.runner import (
@@ -319,7 +318,7 @@ def export_run(
     }
     metadata_path = path.with_name(path.name + ".meta.json")
     run_state = (run["status"], "true" if metadata["current_data"] else "false")
-    _atomic_write_pair(
+    atomic_write_files(
         (path, _csv_lines(_export_row(row, run, run_state) for row in rows)),
         (metadata_path, [json.dumps(metadata, indent=2, sort_keys=True) + "\n"]),
     )
@@ -375,28 +374,3 @@ def _csv_lines(rows: Iterable[list[str]]) -> Iterable[str]:
     for row in rows:
         writer.writerow(row)
         yield line.value
-
-
-def _atomic_write_pair(*outputs: tuple[Path, Iterable[str]]) -> None:
-    """Write every file to a temporary file next to it first, then move them all into place.
-
-    A failure while writing (the likely case: disk full, permissions) leaves the previous files
-    untouched and never a partial file. If a rename itself fails, files written before it stay
-    in place; every CSV row repeats the run id and status, so a mismatch is detectable."""
-    temporaries: list[tuple[Path, Path]] = []
-    try:
-        for path, chunks in outputs:
-            descriptor, name = tempfile.mkstemp(
-                prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
-            )
-            temporaries.append((Path(name), path))
-            with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as handle:
-                for chunk in chunks:
-                    handle.write(chunk)
-                handle.flush()
-                os.fsync(handle.fileno())
-        for temporary, path in temporaries:
-            temporary.replace(path)
-    finally:
-        for temporary, _ in temporaries:
-            temporary.unlink(missing_ok=True)

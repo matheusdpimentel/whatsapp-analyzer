@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from whatsapp_analyzer.store import db
+from whatsapp_analyzer.store import db, migrations
 from whatsapp_analyzer.store.db import (
     APPLICATION_ID,
     DatabaseError,
@@ -181,4 +181,22 @@ def test_migrate_on_a_current_database_does_nothing(tmp_path: Path) -> None:
     connection = connect(path)
     db.migrate(connection)
     assert schema_version(connection) == LATEST_VERSION
+    connection.close()
+
+
+def test_upgrade_from_schema_1_keeps_data(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    path = tmp_path / "analyzer.db"
+    sqlite3.connect(path).close()
+    monkeypatch.setattr(db, "MIGRATIONS", migrations.MIGRATIONS[:1])
+    connection = connect(path)
+    connection.execute(
+        "INSERT INTO metric_configs VALUES ('h', 1, '{}', '2026-01-01T00:00:00+00:00')"
+    )
+    connection.close()
+    monkeypatch.setattr(db, "MIGRATIONS", migrations.MIGRATIONS)
+    connection = connect(path)
+    assert schema_version(connection) == LATEST_VERSION == 2
+    assert connection.execute("SELECT count(*) FROM metric_configs").fetchone()[0] == 1
+    tables = {r[0] for r in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    assert {"llm_runs", "llm_jobs", "llm_attempts"} <= tables
     connection.close()

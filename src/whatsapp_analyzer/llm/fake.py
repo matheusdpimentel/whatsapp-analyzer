@@ -63,7 +63,13 @@ class FakeProvider:
 
     @property
     def name(self) -> str:
-        return FAKE_PROVIDER
+        """`fake` for normal answers; demo scenarios get their own identity, so the runner
+        never reuses their results in a normal run."""
+        if self.scenario is FakeScenario.VALID:
+            return FAKE_PROVIDER
+        if self.scenario is FakeScenario.ERROR:
+            return f"{FAKE_PROVIDER}:{self.scenario.value}:{self.error_kind.value}"
+        return f"{FAKE_PROVIDER}:{self.scenario.value}"
 
     async def complete(self, request: LLMRequest) -> LLMResult:
         self.calls += 1

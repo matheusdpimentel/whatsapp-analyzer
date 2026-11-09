@@ -34,6 +34,7 @@ from whatsapp_analyzer.llm.types import (
 )
 
 DEFAULT_TIMEOUT_SECONDS = 120.0
+TEMPERATURE: float | None = None  # provider default; part of request_id
 
 _FINISH_STATUS = {
     FinishReason.LENGTH: ExecutionStatus.INCOMPLETE_OUTPUT,
@@ -72,6 +73,9 @@ def build_request(
                 "context_hash": context.context_hash,
                 "model": model,
                 "output_schema": OUTPUT_SCHEMA_ID,
+                # generation parameters: a different value is a different request
+                "max_output_tokens": template.max_output_tokens,
+                "temperature": TEMPERATURE,
             }
         )
     )
@@ -86,6 +90,7 @@ def build_request(
         prompt_version=template.version,
         prompt_hash=rendered.prompt_hash,
         context_hash=context.context_hash,
+        temperature=TEMPERATURE,
         timeout_seconds=timeout_seconds,
     )
     return rendered, request
@@ -142,6 +147,8 @@ async def classify(
         error_kind=error.kind if error else None,
         http_status=error.http_status if error else None,
         retryable=error.retryable if error else None,
+        request_sent=error.request_sent if error else None,
+        retry_after_seconds=error.retry_after_seconds if error else None,
         validation_error=validation_error,
         security_flags=tuple(sorted(f.value for f in context.security.flags)),
         usage=usage,

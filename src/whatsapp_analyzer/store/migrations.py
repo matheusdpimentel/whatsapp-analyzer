@@ -141,6 +141,94 @@ MIGRATIONS: tuple[str, ...] = (
         PRIMARY KEY (run_id, version_id)
     ) WITHOUT ROWID;
     """,
+    # 2: persistent LLM runner (milestone 5). These tables never hold message text, prompts or
+    # raw provider responses: only hashes, references, statuses, codes, counts and costs.
+    """
+    CREATE TABLE llm_runs (
+        id INTEGER PRIMARY KEY,
+        status TEXT NOT NULL CHECK (status IN ('running', 'paused', 'interrupted',
+            'budget_reached', 'completed', 'completed_with_failures')),
+        stop_reason TEXT,
+        run_key TEXT NOT NULL,
+        scope_fingerprint TEXT NOT NULL,
+        provider TEXT NOT NULL,
+        model TEXT NOT NULL,
+        prompt_id TEXT NOT NULL,
+        prompt_version TEXT NOT NULL,
+        template_hash TEXT NOT NULL,
+        context_config_hash TEXT NOT NULL,
+        generation_json TEXT NOT NULL,
+        limits_json TEXT NOT NULL,
+        price_json TEXT,
+        jobs_total INTEGER NOT NULL,
+        tool_version TEXT NOT NULL,
+        started_at TEXT NOT NULL,
+        finished_at TEXT,
+        last_used_seq INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE INDEX llm_runs_by_key ON llm_runs (run_key, scope_fingerprint);
+
+    CREATE TABLE llm_jobs (
+        id INTEGER PRIMARY KEY,
+        run_id INTEGER NOT NULL REFERENCES llm_runs(id),
+        version_id INTEGER NOT NULL REFERENCES conversation_versions(id),
+        status TEXT NOT NULL CHECK (status IN ('pending', 'in_flight', 'retry_wait',
+            'awaiting_reconciliation', 'succeeded', 'failed', 'reused', 'skipped')),
+        skip_reason TEXT,
+        request_id TEXT,
+        context_hash TEXT,
+        prompt_hash TEXT,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        round_attempts INTEGER NOT NULL DEFAULT 0,
+        execution_status TEXT,
+        error_kind TEXT,
+        validation_error TEXT,
+        label TEXT,
+        reasons_json TEXT,
+        evidence_json TEXT,
+        security_flags_json TEXT,
+        reused_from_attempt INTEGER REFERENCES llm_attempts(id),
+        UNIQUE (run_id, version_id)
+    );
+
+    CREATE INDEX llm_jobs_by_status ON llm_jobs (run_id, status);
+
+    CREATE INDEX llm_jobs_by_request ON llm_jobs (run_id, request_id);
+
+    CREATE TABLE llm_attempts (
+        id INTEGER PRIMARY KEY,
+        job_id INTEGER NOT NULL REFERENCES llm_jobs(id),
+        number INTEGER NOT NULL,
+        provider TEXT NOT NULL,
+        request_id TEXT NOT NULL,
+        phase TEXT NOT NULL CHECK (phase IN ('dispatched', 'completed', 'abandoned')),
+        billing TEXT NOT NULL CHECK (billing IN ('pending', 'not_sent', 'rejected', 'billed',
+            'unknown')),
+        execution_status TEXT,
+        error_kind TEXT,
+        http_status INTEGER,
+        finish_reason TEXT,
+        provider_request_id TEXT,
+        input_uncached INTEGER,
+        input_cache_read INTEGER,
+        input_cache_write INTEGER,
+        output_total INTEGER,
+        output_reasoning INTEGER,
+        usage_estimated INTEGER,
+        estimated_input_tokens INTEGER NOT NULL,
+        max_output_tokens INTEGER NOT NULL,
+        reserved_tokens INTEGER NOT NULL,
+        reserved_cost TEXT,
+        cost TEXT,
+        latency_ms INTEGER,
+        started_at TEXT NOT NULL,
+        finished_at TEXT,
+        UNIQUE (job_id, number)
+    );
+
+    CREATE INDEX llm_attempts_by_request ON llm_attempts (provider, request_id, execution_status);
+    """,
 )
 
 LATEST_VERSION = len(MIGRATIONS)
