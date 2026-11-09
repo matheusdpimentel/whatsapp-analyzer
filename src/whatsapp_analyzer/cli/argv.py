@@ -33,7 +33,10 @@ def split_global_options(args: Sequence[str]) -> tuple[list[str], str | None]:
     return options, None
 
 
-COMMAND_GROUPS = {"metrics": frozenset({"run", "compare"})}
+COMMAND_GROUPS = {
+    "metrics": frozenset({"run", "compare"}),
+    "llm": frozenset({"prompts", "preview"}),
+}
 
 
 def command_name(args: Sequence[str], command: str | None) -> str | None:

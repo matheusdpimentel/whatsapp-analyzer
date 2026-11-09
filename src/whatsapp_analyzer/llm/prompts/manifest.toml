@@ -1,0 +1,7 @@
+# Built-in prompt templates. Never edit a released template in place: add a new version file
+# and a new entry. tests/test_llm_prompts.py checks every hash.
+[[templates]]
+id = "engagement-classification"
+version = "1.0.0"
+file = "engagement-classification/v1.md"
+sha256 = "55293fe1230eb2e358d5623828ecb7a4c25d861f8585db8b4bc840529c713392"

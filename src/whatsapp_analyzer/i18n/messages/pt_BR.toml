@@ -256,6 +256,8 @@ invalid_choice = "A configuração '{key}' deve ser uma destas: {choices}."
 threshold_order = "'{key}' deve ser maior que '{other}', e ambos devem ser maiores que 0."
 weights_zero = "Pelo menos um peso em '{key}' deve ser maior que 0."
 target_exceeds_lookback = "'{key}' não pode exceder '{limit_key}': a meta nunca seria atingida."
+missing_key = "A configuração '{key}' é obrigatória."
+duplicate_price = "Duas entradas de preço em '{key}' têm o mesmo provedor, modelo e data de vigência."
 
 [init]
 help = "Cria um workspace: arquivo de configuração e banco SQLite. O diretório é ignorado pelo Git."
@@ -376,3 +378,107 @@ overwrite = "Escolha outro arquivo ou use --overwrite."
 [export.warning]
 partial = "Este run está {status}: a exportação contém só as conversas pontuadas até agora."
 outdated = "Os dados mudaram depois deste run: {superseded} linhas foram calculadas a partir de versões anteriores das conversas (coluna data_version)."
+
+[llm]
+help = "Núcleo LLM offline: inspeciona templates de prompt e mostra a prévia de requisições preparadas. Nada é enviado a nenhum provedor."
+
+[llm.prompts]
+help = "Lista os templates de prompt disponíveis com versões e hashes."
+title = "Templates de prompt"
+invalid = "O arquivo de template '{file}' foi ignorado: {reason}"
+
+[llm.prompts.column]
+id = "Template"
+version = "Versão"
+origin = "Origem"
+hash = "Hash"
+
+[llm.preview]
+help = "Prepara localmente a requisição de uma conversa e mostra sua estrutura. Nada é enviado a nenhum provedor."
+title = "Requisição preparada (não enviada)"
+estimate = "~{value} (estimativa)"
+simulation = "Simulação offline com o provedor falso: status {status}, rótulo {label}."
+written = "Prompt mascarado gravado em {path} (legível só por você)."
+written_windows = "Prompt mascarado gravado em {path}. No Windows as permissões seguem as do diretório: mantenha-o em uma pasta privada."
+masking_notice = "O mascaramento substitui identificadores comuns (pseudonimização); ele não torna o texto anônimo."
+cost_unknown = "desconhecido (faltando: {missing})"
+cost_estimate = "no máximo {total} {currency} (estimativa)"
+
+[llm.preview.arg]
+conversation = "Chave da conversa, como foi importada (em arquivos TXT, o nome do arquivo sem extensão)."
+
+[llm.preview.option]
+source_format = "Formato de origem da conversa quando a mesma chave existe em vários formatos."
+prompt = "Id do template, id@versão ou um arquivo .md. Padrão: [llm] prompt do analyzer.toml."
+config = "Lê as configurações deste arquivo em vez do analyzer.toml do workspace."
+simulate = "Também executa a requisição no provedor falso offline e mostra o resultado."
+show_content = "Mostra o prompt mascarado. Exige confirmação."
+out = "Grava o prompt mascarado neste arquivo (modo 600). Exige confirmação."
+overwrite = "Substitui o arquivo de --out se ele existir."
+confirm_content = "Confirma a saída de conteúdo sem pergunta interativa (scripts e agentes). Confirma apenas --show-content e --out."
+allow_git_worktree = "Permite --out dentro de um repositório Git (fora de um workspace)."
+
+[llm.preview.error]
+GROUP_EXCLUDED = "Conversas em grupo ficam fora da análise com LLM (defina [llm.context] include_groups = true para mudar isso)."
+NO_MESSAGES = "A conversa não tem mensagens para analisar."
+CONTEXT_BUDGET_EXCEEDED = "A mensagem mais recente, junto com o aviso de mensagens omitidas, não cabe em [llm.context] max_context_tokens."
+CONVERSATION_NOT_FOUND = "Não existe conversa com essa chave no workspace."
+AMBIGUOUS_CONVERSATION = "Existem {count} conversas com essa chave em formatos diferentes."
+confirmation_required = "Mostrar ou gravar o conteúdo do prompt exige confirmação, e não há terminal interativo disponível."
+not_confirmed = "A saída de conteúdo não foi confirmada."
+OUTPUT_EXISTS = "O arquivo de saída '{path}' já existe."
+OUTPUT_IS_SYMLINK = "'{path}' é um link simbólico; a gravação através dele foi recusada."
+OUTPUT_IS_DIRECTORY = "'{path}' é um diretório."
+OUTPUT_PARENT_MISSING = "O diretório de '{path}' não existe."
+OUTPUT_IN_GIT_WORKTREE = "'{path}' está dentro de um repositório Git e não é ignorado por ele, então o conteúdo poderia ser commitado por engano."
+OUTPUT_LOCATION_CHANGED = "O diretório de saída de '{path}' mudou depois da verificação; nada foi gravado."
+
+[llm.preview.hint]
+source_format = "Informe --source-format (veja 'status' para os formatos do workspace)."
+confirm_content = "Use --confirm-content para confirmar explicitamente."
+overwrite = "Escolha outro arquivo ou use --overwrite."
+git_worktree = "Grave dentro do workspace ou fora do repositório, ou use --allow-git-worktree."
+
+[llm.preview.warning]
+content = "O prompt contém suas mensagens depois do mascaramento. Mascaramento não é anonimização."
+flags = "Alertas de segurança são sinais de risco de heurísticas, não prova de ataque. Eles não alteram nenhuma classificação."
+
+[llm.preview.prompt]
+confirm = "Digite '{word}' para mostrar ou gravar o conteúdo"
+
+[llm.preview.row]
+conversation = "Conversa"
+provider = "Provedor / modelo"
+template = "Template"
+messages_shown = "Mensagens exibidas"
+messages_omitted = "Mensagens anteriores omitidas"
+messages_truncated = "Mensagens encurtadas"
+masking = "Identificadores mascarados"
+input_tokens = "Tokens de entrada"
+max_output = "Máximo de tokens de saída"
+cost = "Custo"
+security_flags = "Alertas de segurança"
+request_id = "Id da requisição"
+
+[llm.prompt_error]
+hint = "Veja docs/llm.md para o formato dos templates."
+missing_front_matter = "O template deve começar com um cabeçalho TOML entre linhas '+++'."
+front_matter_syntax = "O cabeçalho do template não é TOML válido: {reason}"
+unknown_key = "Chave de cabeçalho desconhecida '{key}'."
+missing_key = "A chave de cabeçalho '{key}' é obrigatória."
+wrong_type = "A chave de cabeçalho '{key}' deve ser: {expected}."
+invalid_id = "O id do template deve usar letras minúsculas, dígitos e hífens."
+invalid_version = "A versão do template deve ter o formato 1.0.0."
+unknown_output_schema = "Schema de saída desconhecido em '{key}'."
+variables_mismatch = "As variáveis declaradas e os placeholders diferem (não declarados: {undeclared}; não usados: {unused})."
+unknown_section = "Seção desconhecida '## {section}'. Só '## system' e '## user' são permitidas."
+duplicate_section = "A seção '## {section}' aparece duas vezes."
+text_before_section = "Há texto antes da primeira seção."
+missing_section = "A seção '## {section}' está ausente ou vazia."
+values_mismatch = "Os valores do template diferem das variáveis (faltando: {missing}; inesperados: {unexpected})."
+file_not_found = "Arquivo de template '{path}' não encontrado."
+unreadable = "O arquivo de template '{path}' não pode ser lido como texto UTF-8."
+manifest_mismatch = "O template embutido '{file}' não corresponde à entrada do manifest."
+unknown_template = "Nenhum template '{reference}' encontrado."
+unknown_template_with_invalid = "Nenhum template válido '{reference}' encontrado. Estes arquivos de template são inválidos e foram ignorados: {invalid}."
+duplicate_template = "O template '{reference}' está definido mais de uma vez."

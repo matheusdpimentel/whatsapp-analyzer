@@ -154,3 +154,32 @@ def test_ignored_texts_are_hashed_as_applied() -> None:
     a = parse_settings({"metrics": {"ignored_texts": ["ok"]}}).metrics
     b = parse_settings({"metrics": {"ignored_texts": [" ok "]}}).metrics
     assert a.resolved(date(2026, 1, 1)) == b.resolved(date(2026, 1, 1))
+
+
+@pytest.mark.parametrize(
+    ("data", "kind", "key"),
+    [
+        ({"llm": {"provider": "openai"}}, "invalid_choice", "llm.provider"),
+        ({"llm": {"model": ""}}, "wrong_type", "llm.model"),
+        ({"llm": {"temperature": 0}}, "unknown_key", "llm.temperature"),
+        ({"llm": {"context": {"max_messages": 0}}}, "out_of_range", "llm.context.max_messages"),
+        (
+            {"llm": {"context": {"include_groups": "no"}}},
+            "wrong_type",
+            "llm.context.include_groups",
+        ),
+        ({"llm": {"context": {"max_tokens": 5}}}, "unknown_key", "llm.context.max_tokens"),
+    ],
+)
+def test_invalid_llm_settings_are_rejected(data: dict[str, Any], kind: str, key: str) -> None:
+    with pytest.raises(ConfigError) as info:
+        parse_settings(data)
+    assert (info.value.kind, info.value.details["key"]) == (kind, key)
+
+
+def test_llm_settings_do_not_change_metric_hashes() -> None:
+    plain = parse_settings({})
+    tuned = parse_settings({"llm": {"context": {"max_messages": 10}}})
+    reference = date(2026, 1, 31)
+    assert plain.metrics.resolved(reference) == tuned.metrics.resolved(reference)
+    assert plain.scoring == tuned.scoring

@@ -1,11 +1,13 @@
 """Workspace configuration (`analyzer.toml`).
 
-The file has two independent sections:
+The file has independent sections:
 
 - `[metrics]` controls how RAW metrics are computed from messages. Changing it (or the resolved
   reference date) produces a new metrics hash, and raw metrics are computed again.
 - `[scoring]` controls how raw metrics become normalized values, a score and a level. Changing
   it only re-scores the stored raw metrics.
+- `[llm]` selects the provider, model and prompt template, and `[llm.context]` limits what is
+  prepared for a model. It never affects deterministic metrics.
 
 Validation is strict: unknown keys, wrong types and out-of-range values are errors, never
 silently corrected. Missing keys take the documented defaults.
@@ -85,10 +87,30 @@ class ScoringSettings:
         return asdict(self)
 
 
+SUPPORTED_PROVIDERS = ("fake",)  # real providers arrive in milestone 6
+
+
+@dataclass(frozen=True)
+class ContextSettings:
+    max_messages: int = 200
+    max_context_tokens: int = 6000  # estimated tokens for the conversation block
+    max_message_chars: int = 1000
+    include_groups: bool = False
+
+
+@dataclass(frozen=True)
+class LlmSettings:
+    provider: str = "fake"
+    model: str = "fake-classifier"
+    prompt: str = "engagement-classification"  # template id, id@version or a .md path
+    context: ContextSettings = field(default_factory=ContextSettings)
+
+
 @dataclass(frozen=True)
 class Settings:
     metrics: MetricsSettings = field(default_factory=MetricsSettings)
     scoring: ScoringSettings = field(default_factory=ScoringSettings)
+    llm: LlmSettings = field(default_factory=LlmSettings)
 
 
 DEFAULT_CONFIG_TEXT = """\
@@ -127,6 +149,18 @@ recency = 0.25
 [scoring.thresholds]
 high = 0.66
 medium = 0.33
+
+[llm]
+# Milestone 4 is offline: only the "fake" provider exists. See docs/llm.md.
+provider = "fake"
+model = "fake-classifier"
+prompt = "engagement-classification"
+
+[llm.context]
+max_messages = 200
+max_context_tokens = 6000   # estimated, not exact
+max_message_chars = 1000
+include_groups = false
 """
 
 
@@ -145,16 +179,53 @@ def load_settings(path: Path) -> Settings:
 
 
 def parse_settings(data: dict[str, Any]) -> Settings:
-    _reject_unknown(data, {"metrics", "scoring"}, "")
+    _reject_unknown(data, {"metrics", "scoring", "llm"}, "")
     metrics = _parse_metrics(_table(data, "metrics", ""))
     scoring = _parse_scoring(_table(data, "scoring", ""))
+    llm = _parse_llm(_table(data, "llm", ""))
     if scoring.target_active_weeks > metrics.lookback_weeks:
         raise ConfigError(
             "target_exceeds_lookback",
             key="scoring.target_active_weeks",
             limit_key="metrics.lookback_weeks",
         )
-    return Settings(metrics, scoring)
+    return Settings(metrics, scoring, llm)
+
+
+def _parse_llm(table: dict[str, Any]) -> LlmSettings:
+    path = "llm."
+    defaults = LlmSettings()
+    _reject_unknown(table, {"provider", "model", "prompt", "context"}, path)
+    provider = table.get("provider", defaults.provider)
+    if provider not in SUPPORTED_PROVIDERS:
+        raise ConfigError(
+            "invalid_choice", key=f"{path}provider", choices=", ".join(SUPPORTED_PROVIDERS)
+        )
+    for name in ("model", "prompt"):
+        value = table.get(name, getattr(defaults, name))
+        if not isinstance(value, str) or not value.strip():
+            raise ConfigError("wrong_type", key=f"{path}{name}", expected="string")
+    context = _table(table, "context", path)
+    context_path = f"{path}context."
+    base = ContextSettings()
+    _reject_unknown(context, set(asdict(base)), context_path)
+    return LlmSettings(
+        provider=provider,
+        model=table.get("model", defaults.model),
+        prompt=table.get("prompt", defaults.prompt),
+        context=ContextSettings(
+            max_messages=_integer(
+                context, "max_messages", context_path, base.max_messages, 1, 5000
+            ),
+            max_context_tokens=_integer(
+                context, "max_context_tokens", context_path, base.max_context_tokens, 100, 1_000_000
+            ),
+            max_message_chars=_integer(
+                context, "max_message_chars", context_path, base.max_message_chars, 20, 100_000
+            ),
+            include_groups=_boolean(context, "include_groups", context_path, base.include_groups),
+        ),
+    )
 
 
 def _parse_metrics(table: dict[str, Any]) -> MetricsSettings:

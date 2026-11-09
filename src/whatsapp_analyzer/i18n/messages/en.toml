@@ -256,6 +256,8 @@ invalid_choice = "Setting '{key}' must be one of: {choices}."
 threshold_order = "'{key}' must be greater than '{other}', and both must be greater than 0."
 weights_zero = "At least one weight in '{key}' must be greater than 0."
 target_exceeds_lookback = "'{key}' cannot exceed '{limit_key}': the target could never be reached."
+missing_key = "Setting '{key}' is required."
+duplicate_price = "Two price entries in '{key}' have the same provider, model and effective date."
 
 [init]
 help = "Create a workspace: configuration file and SQLite database. The directory is ignored by Git."
@@ -376,3 +378,107 @@ overwrite = "Choose another file or pass --overwrite."
 [export.warning]
 partial = "This run is {status}: the export contains only the conversations scored so far."
 outdated = "Data changed after this run: {superseded} rows were computed from earlier conversation versions (column data_version)."
+
+[llm]
+help = "Offline LLM core: inspect prompt templates and preview prepared requests. Nothing is sent to any provider."
+
+[llm.prompts]
+help = "List the available prompt templates with their versions and hashes."
+title = "Prompt templates"
+invalid = "Template file '{file}' was skipped: {reason}"
+
+[llm.prompts.column]
+id = "Template"
+version = "Version"
+origin = "Origin"
+hash = "Hash"
+
+[llm.preview]
+help = "Prepare the request for one conversation locally and show its structure. Nothing is sent to any provider."
+title = "Prepared request (not sent)"
+estimate = "~{value} (estimate)"
+simulation = "Offline simulation with the fake provider: status {status}, label {label}."
+written = "Masked prompt written to {path} (readable only by you)."
+written_windows = "Masked prompt written to {path}. On Windows the file permissions follow the directory: keep it in a private folder."
+masking_notice = "Masking replaces common identifiers (pseudonymization); it does not make the text anonymous."
+cost_unknown = "unknown (missing: {missing})"
+cost_estimate = "at most {total} {currency} (estimate)"
+
+[llm.preview.arg]
+conversation = "Conversation key, as imported (for TXT files, the file name without extension)."
+
+[llm.preview.option]
+source_format = "Source format of the conversation when the same key exists in several formats."
+prompt = "Template id, id@version or a .md file. Defaults to [llm] prompt in analyzer.toml."
+config = "Read the settings from this file instead of the workspace's analyzer.toml."
+simulate = "Also run the request through the offline fake provider and show the outcome."
+show_content = "Print the masked prompt. Requires confirmation."
+out = "Write the masked prompt to this file (mode 600). Requires confirmation."
+overwrite = "Replace the --out file if it exists."
+confirm_content = "Confirm content output without an interactive prompt (scripts and agents). It confirms only --show-content and --out."
+allow_git_worktree = "Allow --out inside a Git work tree (outside a workspace)."
+
+[llm.preview.error]
+GROUP_EXCLUDED = "Group conversations are excluded from LLM analysis (set [llm.context] include_groups = true to change this)."
+NO_MESSAGES = "The conversation has no messages to analyze."
+CONTEXT_BUDGET_EXCEEDED = "The latest message, together with the notice about omitted messages, does not fit in [llm.context] max_context_tokens."
+CONVERSATION_NOT_FOUND = "No conversation with this key exists in the workspace."
+AMBIGUOUS_CONVERSATION = "{count} conversations with this key exist in different formats."
+confirmation_required = "Showing or writing prompt content needs confirmation, and no interactive terminal is available."
+not_confirmed = "Content output was not confirmed."
+OUTPUT_EXISTS = "The output file '{path}' already exists."
+OUTPUT_IS_SYMLINK = "'{path}' is a symbolic link; refusing to write through it."
+OUTPUT_IS_DIRECTORY = "'{path}' is a directory."
+OUTPUT_PARENT_MISSING = "The directory of '{path}' does not exist."
+OUTPUT_IN_GIT_WORKTREE = "'{path}' is inside a Git work tree and Git does not ignore it, so the content could be committed by mistake."
+OUTPUT_LOCATION_CHANGED = "The output directory of '{path}' changed after it was checked; nothing was written."
+
+[llm.preview.hint]
+source_format = "Pass --source-format (see 'status' for the formats in the workspace)."
+confirm_content = "Pass --confirm-content to confirm explicitly."
+overwrite = "Choose another file or pass --overwrite."
+git_worktree = "Write inside the workspace or outside the repository, or pass --allow-git-worktree."
+
+[llm.preview.warning]
+content = "The prompt contains your messages after masking. Masking is not anonymization."
+flags = "Security flags are risk signals from heuristics, not proof of an attack. They do not change any classification."
+
+[llm.preview.prompt]
+confirm = "Type '{word}' to show or write the content"
+
+[llm.preview.row]
+conversation = "Conversation"
+provider = "Provider / model"
+template = "Template"
+messages_shown = "Messages shown"
+messages_omitted = "Earlier messages omitted"
+messages_truncated = "Messages shortened"
+masking = "Masked identifiers"
+input_tokens = "Input tokens"
+max_output = "Maximum output tokens"
+cost = "Cost"
+security_flags = "Security flags"
+request_id = "Request id"
+
+[llm.prompt_error]
+hint = "See docs/llm.md for the template format."
+missing_front_matter = "The template must start with a TOML front matter between '+++' lines."
+front_matter_syntax = "The template front matter is not valid TOML: {reason}"
+unknown_key = "Unknown front matter key '{key}'."
+missing_key = "The front matter key '{key}' is required."
+wrong_type = "Front matter key '{key}' must be: {expected}."
+invalid_id = "The template id must use lowercase letters, digits and dashes."
+invalid_version = "The template version must look like 1.0.0."
+unknown_output_schema = "Unknown output schema in '{key}'."
+variables_mismatch = "Declared variables and placeholders differ (undeclared: {undeclared}; unused: {unused})."
+unknown_section = "Unknown section '## {section}'. Only '## system' and '## user' are allowed."
+duplicate_section = "Section '## {section}' appears twice."
+text_before_section = "Text appears before the first section."
+missing_section = "Section '## {section}' is missing or empty."
+values_mismatch = "Template values differ from its variables (missing: {missing}; unexpected: {unexpected})."
+file_not_found = "Template file '{path}' not found."
+unreadable = "Template file '{path}' cannot be read as UTF-8 text."
+manifest_mismatch = "Built-in template '{file}' does not match its manifest entry."
+unknown_template = "No template '{reference}' found."
+unknown_template_with_invalid = "No valid template '{reference}' found. These template files are invalid and were skipped: {invalid}."
+duplicate_template = "Template '{reference}' is defined more than once."

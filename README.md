@@ -4,9 +4,10 @@ A local, terminal-based tool for processing, analyzing and classifying WhatsApp 
 exports. It computes deterministic engagement metrics and can optionally classify conversations
 with an LLM provider that you configure.
 
-> **Status: early development (milestone 3).** Conversations can be imported, validated and
+> **Status: early development (milestone 4).** Conversations can be imported, validated and
 > stored in a local workspace, and deterministic engagement metrics can be computed, compared
-> and exported. LLM analysis comes next. Architecture decisions are recorded in
+> and exported. The offline LLM core (prompts, context preparation, validation, token and cost
+> accounting) can be previewed locally. Real providers come in later milestones. Architecture decisions are recorded in
 > [`docs/adr/`](docs/adr/).
 
 This project is not affiliated with, endorsed by, or sponsored by WhatsApp or Meta.
@@ -68,6 +69,18 @@ apart from scores, so changing weights or thresholds re-scores without recomputi
 Re-importing unchanged conversations does nothing, and earlier results remain traceable to the
 data version they were computed from. Definitions, configuration, caching rules and the export
 format are in [`docs/metrics.md`](docs/metrics.md).
+
+### LLM core (offline preview)
+
+```bash
+whatsapp-analyzer llm prompts                          # prompt templates, versions, hashes
+whatsapp-analyzer llm preview KEY -w ./analysis        # what would be sent: counts, estimates
+whatsapp-analyzer llm preview KEY -w ./analysis --simulate   # run the offline fake provider
+```
+
+Nothing is sent to any provider yet. The preview shows no message content unless you ask for it
+with `--show-content` or `--out` and confirm. Identifiers are masked, but masking is
+pseudonymization, not anonymization. See [`docs/llm.md`](docs/llm.md).
 
 ### Synthetic demo data
 

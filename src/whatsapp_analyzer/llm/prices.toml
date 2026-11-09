@@ -1,0 +1,16 @@
+# Built-in price table (per million tokens, decimal strings).
+# Milestone 4 ships no real provider prices: they are added in milestone 6 with their source
+# and retrieval date. Add or override entries in <workspace>/pricing.toml (same format).
+schema = 1
+
+[[prices]]
+provider = "fake"
+model = "fake-classifier"
+currency = "USD"
+unit = "per_million_tokens"
+input = "0"
+cache_read = "0"
+cache_write = "0"
+output = "0"
+effective_from = 2026-01-01
+source = "Offline test provider of this project; never billed."

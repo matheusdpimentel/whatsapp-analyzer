@@ -18,8 +18,9 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
+from whatsapp_analyzer.llm.redaction import CREDENTIAL_ENV_VARS
+
 PROVIDER_PACKAGES = ("openai", "anthropic")
-CREDENTIAL_ENV_VARS = ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_COMPAT_API_KEY")
 
 _GIB = 1024**3
 
