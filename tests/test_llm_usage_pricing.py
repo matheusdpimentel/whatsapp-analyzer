@@ -1,6 +1,6 @@
 """Usage buckets, price tables and cost estimates."""
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -12,10 +12,12 @@ from whatsapp_analyzer.llm.pricing import (
     builtin_prices,
     estimate_cost,
     load_prices,
+    long_tier,
     parse_price_table,
 )
 from whatsapp_analyzer.llm.tokens import estimate_prompt_tokens, estimate_text_tokens
 from whatsapp_analyzer.llm.types import Usage
+from whatsapp_analyzer.runner.ledger import Ledger, reservation_for, worst_case_rate
 
 
 def table(**overrides: object) -> dict[str, Any]:
@@ -139,8 +141,17 @@ def test_lookup_respects_effective_dates_and_workspace_override(tmp_path: Path) 
     assert chosen is not None and chosen.origin == "pricing.toml" and chosen.input == Decimal(1)
 
 
-def test_builtin_table_has_no_real_provider_prices() -> None:
-    assert {p.provider for p in builtin_prices().prices} == {"fake"}
+def test_builtin_real_prices_are_sourced_dated_and_complete() -> None:
+    """Milestone 6 ships real prices: each one names its source and retrieval date and has
+    every rate, so a hard cost limit can be checked against it."""
+    real = [p for p in builtin_prices().prices if p.provider != "fake"]
+    assert {p.provider for p in real} == {"openai", "anthropic"}
+    for price in real:
+        assert price.source.startswith("https://") and price.retrieved_at is not None
+        assert price.cache_read is not None and price.cache_write is not None
+        assert not price.stale(price.retrieved_at)
+        assert not price.stale(price.retrieved_at + timedelta(days=90))
+        assert price.stale(price.retrieved_at + timedelta(days=91))
 
 
 def test_token_estimates_are_conservative_and_deterministic() -> None:
@@ -162,3 +173,125 @@ def test_datetimes_and_boolean_schema_are_rejected() -> None:
         parse_price_table(table(effective_from=datetime(2026, 1, 1)), "test")
     with pytest.raises(ConfigError):
         parse_price_table({"schema": True, "prices": []}, "test")
+
+
+# M6-01: long-context price tiers ----------------------------------------------------------
+
+LUNA = builtin_prices().lookup("openai", "gpt-6-luna", date(2026, 11, 11))
+HAIKU = builtin_prices().lookup("anthropic", "claude-haiku-5-5", date(2026, 11, 11))
+
+
+def luna_usage(uncached: int, read: int = 0, write: int = 0, output: int = 128000) -> Usage:
+    return Usage(
+        input_uncached=uncached, input_cache_read=read, input_cache_write=write, output_total=output
+    )
+
+
+def test_luna_long_context_is_priced_for_the_whole_request() -> None:
+    """Official rule: more than 272K input tokens -> 2x input and cache, 1.5x output."""
+    assert LUNA is not None and LUNA.max_input_tokens == 272000 and LUNA.has_long_rates
+    cost = estimate_cost(luna_usage(300000), LUNA).total
+    assert cost == (Decimal(300000) * Decimal("0.20") + Decimal(128000) * Decimal("0.75")) / 10**6
+    assert cost == Decimal("0.156")  # the audit's applicable cost (was 0.094)
+
+
+@pytest.mark.parametrize(
+    ("uncached", "read", "write", "long"),
+    [
+        (271999, 0, 0, False),
+        (272000, 0, 0, False),  # "short context: <= 272K input tokens"
+        (272001, 0, 0, True),
+        (200000, 72001, 0, True),  # cached and written tokens count toward the threshold
+        (200000, 0, 72001, True),
+    ],
+)
+def test_tier_boundary(uncached: int, read: int, write: int, long: bool) -> None:
+    assert LUNA is not None
+    assert long_tier(luna_usage(uncached, read, write), LUNA) is long
+    rates = LUNA.rates(long)
+    expected = (
+        Decimal(uncached) * rates["input"]  # type: ignore[operator]
+        + Decimal(read) * rates["cache_read"]  # type: ignore[operator]
+        + Decimal(write) * rates["cache_write"]  # type: ignore[operator]
+        + Decimal(128000) * rates["output"]  # type: ignore[operator]
+    ) / 10**6
+    assert estimate_cost(luna_usage(uncached, read, write), LUNA).total == expected
+
+
+def test_unknown_input_total_never_assumes_the_cheaper_tier() -> None:
+    assert LUNA is not None
+    unknown = Usage(input_uncached=1000, input_cache_read=None, input_cache_write=0)
+    assert long_tier(unknown, LUNA) is True
+    assert estimate_cost(unknown, LUNA).total is None  # and the cost itself stays unknown
+
+
+def test_haiku_long_tier_uses_its_official_prices() -> None:
+    assert HAIKU is not None and HAIKU.max_input_tokens == 100000
+    cost = estimate_cost(luna_usage(100001, output=1000), HAIKU).total
+    assert cost == (Decimal(100001) * Decimal("0.50") + Decimal(1000) * Decimal("2.50")) / 10**6
+
+
+def test_reservations_use_the_highest_rate_of_every_tier() -> None:
+    assert LUNA is not None
+    assert worst_case_rate(LUNA) == Decimal("0.75") / 10**6  # long output, not short 0.50
+
+
+def test_budget_is_not_exceeded_by_the_long_tier() -> None:
+    """The audit's ledger scenario: US$ 1 budget, 300K input + 128K output per request."""
+    assert LUNA is not None
+    reported = estimate_cost(luna_usage(300000), LUNA).total
+    ledger = Ledger(None, Decimal(1))
+    reservation = reservation_for(300000, 128000, worst_case_rate(LUNA))
+    sends = 0
+    while ledger.fits(reservation) is None:
+        ledger.reserve(reservation)
+        ledger.release(reservation)
+        ledger.charge(428000, reported)
+        sends += 1
+    assert sends == 5 and ledger.consumed_cost == Decimal("0.780") <= Decimal(1)
+
+
+def tiered_entry(**extra: str) -> dict[str, Any]:
+    entry: dict[str, Any] = {
+        "provider": "p",
+        "model": "m",
+        "currency": "USD",
+        "unit": "per_million_tokens",
+        "input": "1",
+        "output": "2",
+        "cache_read": "0.1",
+        "cache_write": "1.25",
+        "effective_from": date(2026, 1, 1),
+        "source": "test",
+    }
+    entry.update(extra)
+    return entry
+
+
+def test_tiered_entries_need_all_long_rates_and_a_ceiling() -> None:
+    with pytest.raises(ConfigError) as info:
+        parse_price_table(
+            {"schema": 1, "prices": [{**tiered_entry(long_input="2"), "max_input_tokens": 10}]},
+            "pricing.toml",
+        )
+    assert (info.value.kind, info.value.details["key"]) == (
+        "missing_key",
+        "prices[0].long_cache_read",
+    )
+    long_rates = {"long_input": "2", "long_cache_read": "0.2", "long_cache_write": "2.5"}
+    with pytest.raises(ConfigError) as info:
+        parse_price_table(
+            {"schema": 1, "prices": [tiered_entry(**long_rates, long_output="3")]}, "pricing.toml"
+        )
+    assert info.value.details["key"] == "prices[0].max_input_tokens"
+
+
+def test_ceiling_without_long_rates_cannot_back_a_cost_limit() -> None:
+    table = parse_price_table(
+        {"schema": 1, "prices": [{**tiered_entry(), "max_input_tokens": 1000}]}, "pricing.toml"
+    )
+    price = table.prices[0]
+    assert worst_case_rate(price) is None  # --max-cost is refused (BUDGET_UNVERIFIABLE)
+    above = estimate_cost(Usage(1001, 0, 0, 10), price)
+    assert above.total is None and above.missing == ("price.long_context",)
+    assert estimate_cost(Usage(1000, 0, 0, 10), price).total is not None

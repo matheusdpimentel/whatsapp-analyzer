@@ -2,7 +2,8 @@
 
 Milestone 4 adds the provider-independent core for classifying conversations with a language
 model. **Nothing in it contacts a network or a paid service.** The only provider is the
-deterministic `FakeProvider`. Real OpenAI and Anthropic adapters arrive in milestone 6. The
+deterministic `FakeProvider`. Real OpenAI, Anthropic and OpenAI-compatible adapters arrived in
+milestone 6 ([providers.md](providers.md)). The
 runner, concurrency, retries and the persistence of calls arrive in milestone 5.
 
 **Local mode sends nothing anywhere.** Importing, metrics, `llm prompts`, `llm preview` and
@@ -292,16 +293,17 @@ effective_from = 2026-06-01
 source = "https://example.com/pricing (retrieved 2026-06-01)"
 ```
 
-The built-in table contains only the zero-priced fake model. Milestone 6 adds real prices with
-their source and retrieval date. `<workspace>/pricing.toml` can add or override entries at any
+The built-in table holds the zero-priced fake model and, since milestone 6, real prices with
+their source and retrieval date (`retrieved_at`; entries older than 90 days are reported as
+stale, see [providers.md](providers.md#tokens-and-costs)). `<workspace>/pricing.toml` can add or override entries at any
 time; it wins over a built-in entry with the same effective date. The preview uses the entry in
 effect today; entries dated in the future are ignored until their date. Dates must be plain
 TOML dates, not date-times.
 
 A cost is never guessed. If a bucket has tokens but no price, or a usage count is unknown, the
 total is `null` and `missing` lists what is lacking. Tiered context pricing, batch discounts and
-cache durations with different prices are not modeled yet; models that need them have an
-unknown cost until milestone 6.
+cache durations with different prices are not modeled: a built-in entry states the tier it
+covers in its `source` (for example "prompts up to 100,000 tokens").
 
 ## Provider contract
 
@@ -325,11 +327,13 @@ class Provider(Protocol):
 | `RATE_LIMITED`, `OVERLOADED`, `SERVER_ERROR`, `TIMEOUT`, `NETWORK`, `MALFORMED_PROVIDER_RESPONSE` | yes | no |
 | `CONTEXT_TOO_LONG`, `INVALID_REQUEST` | no | no |
 | `ADAPTER_ERROR` (an unexpected exception in an adapter: a bug) | no | no |
+| `ENDPOINT_ERROR` (an HTTP error from an endpoint that does not document its refusals as unprocessed: OpenAI-compatible servers, gateways, a custom `base_url`; billing unknown, see [providers.md](providers.md#errors)) | no | no |
 
 `ProviderError.safe_message` is redacted. Values of the credential variables and key-shaped
 strings (`sk-...`, `Bearer ...`, `api_key=...`) are replaced, and request content and headers
 are never included. Adapters must never suppress `asyncio.CancelledError`. Real adapters
-(milestone 6) will hold credentials in `SecretValue`, whose `repr` is `SecretValue('***')`.
+(milestone 6) hold credentials in `SecretValue`, whose `repr` is `SecretValue('***')`; see
+[providers.md](providers.md).
 The fake provider's usage is a local estimate and is labeled `estimated: true`.
 
 ## Telemetry
@@ -346,10 +350,11 @@ The fake provider's usage is a local estimate and is labeled `estimated: true`.
 It never contains prompts, message text, raw responses or credentials. Milestone 4 keeps it in
 memory; milestone 5 persists it.
 
-## Requirement for milestone 6: explicit authorization before sending
+## Explicit authorization before sending (implemented in milestone 6)
 
-Before any real provider sends conversation content outside this machine, milestone 6 must
-require an explicit authorization from the user:
+Milestone 6 implements this requirement, more strictly: every invocation that may send is
+authorized anew (see [providers.md](providers.md#authorization-before-sending) and ADR 0007).
+The requirement as recorded in milestone 4:
 
 - It names the provider and model and states that masked conversation content will be sent.
 - It is given per workspace and provider, and recorded with a hash of what was authorized, so a

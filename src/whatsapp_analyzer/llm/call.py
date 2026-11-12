@@ -36,6 +36,21 @@ from whatsapp_analyzer.llm.types import (
 DEFAULT_TIMEOUT_SECONDS = 120.0
 TEMPERATURE: float | None = None  # provider default; part of request_id
 
+
+@dataclass(frozen=True)
+class Generation:
+    """Generation parameters from the configuration. Every value is part of `request_id`, so
+    a different value is a different request.
+
+    `params` are provider-specific request parameters (options and the structured output
+    mode). They are hashed only when present, so requests without them keep the ids they
+    had before real providers existed."""
+
+    max_output_tokens: int | None = None  # None: the prompt template's value
+    temperature: float | None = TEMPERATURE
+    params: tuple[tuple[str, object], ...] = ()
+
+
 _FINISH_STATUS = {
     FinishReason.LENGTH: ExecutionStatus.INCOMPLETE_OUTPUT,
     FinishReason.REFUSAL: ExecutionStatus.REFUSED,
@@ -55,6 +70,7 @@ def build_request(
     context: PreparedContext,
     model: str,
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
+    generation: Generation = Generation(),  # noqa: B008  (frozen, immutable default)
 ) -> tuple[RenderedPrompt, LLMRequest]:
     rendered = render(
         template,
@@ -66,31 +82,31 @@ def build_request(
         },
         model,
     )
-    request_id = sha256_hex(
-        canonical_json(
-            {
-                "prompt_hash": rendered.prompt_hash,
-                "context_hash": context.context_hash,
-                "model": model,
-                "output_schema": OUTPUT_SCHEMA_ID,
-                # generation parameters: a different value is a different request
-                "max_output_tokens": template.max_output_tokens,
-                "temperature": TEMPERATURE,
-            }
-        )
-    )
+    max_output = generation.max_output_tokens or template.max_output_tokens
+    identity: dict[str, object] = {
+        "prompt_hash": rendered.prompt_hash,
+        "context_hash": context.context_hash,
+        "model": model,
+        "output_schema": OUTPUT_SCHEMA_ID,
+        # generation parameters: a different value is a different request
+        "max_output_tokens": max_output,
+        "temperature": generation.temperature,
+    }
+    if generation.params:
+        identity["provider_params"] = dict(generation.params)
+    request_id = sha256_hex(canonical_json(identity))
     request = LLMRequest(
         request_id=request_id,
         model=model,
         system=rendered.system,
         messages=(ChatMessage(Role.USER, rendered.user),),
-        max_output_tokens=template.max_output_tokens,
+        max_output_tokens=max_output,
         response_schema=output_schema(),
         prompt_id=template.id,
         prompt_version=template.version,
         prompt_hash=rendered.prompt_hash,
         context_hash=context.context_hash,
-        temperature=TEMPERATURE,
+        temperature=generation.temperature,
         timeout_seconds=timeout_seconds,
     )
     return rendered, request
@@ -114,6 +130,15 @@ async def classify(
         error = exc
     except Exception as exc:  # a faulty adapter must still produce an outcome and telemetry
         error = ProviderError(ErrorKind.ADAPTER_ERROR, type(exc).__name__)
+    if result is not None and not isinstance(result.text, str):
+        # An adapter returned something that is not text: the response arrived (and may be
+        # billed), so it is a malformed response of this job, never a crash of the run.
+        result = None
+        error = ProviderError(
+            ErrorKind.MALFORMED_PROVIDER_RESPONSE,
+            "response text is not a string",
+            request_sent=True,
+        )
     latency_ms = round((clock() - started) * 1000)
 
     classification: Classification | None = None

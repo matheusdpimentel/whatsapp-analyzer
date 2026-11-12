@@ -245,6 +245,9 @@ MIGRATION_FAILED = "Não foi possível atualizar o schema de '{path}' ({error}).
 hint = "Veja docs/metrics.md para todas as configurações e seus valores permitidos."
 
 [config.error]
+not_applicable = "A configuração '{key}' não se aplica ao provedor '{provider}'."
+invalid_env_name = "A configuração '{key}' deve ser o NOME de uma variável de ambiente (letras, dígitos e _; sem começar por dígito), nunca a própria chave."
+duplicate_model = "Duas entradas em '{key}' descrevem o mesmo provedor e modelo."
 missing_file = "Arquivo de configuração '{path}' não encontrado."
 unreadable = "O arquivo de configuração '{path}' não pode ser lido como texto UTF-8."
 syntax = "O arquivo de configuração '{path}' não é TOML válido: {reason}"
@@ -380,7 +383,7 @@ partial = "Este run está {status}: a exportação contém só as conversas pont
 outdated = "Os dados mudaram depois deste run: {superseded} linhas foram calculadas a partir de versões anteriores das conversas (coluna data_version)."
 
 [llm]
-help = "Núcleo LLM offline: inspeciona templates de prompt e mostra a prévia de requisições preparadas. Nada é enviado a nenhum provedor."
+help = "Classificação por LLM: templates de prompt, prévias offline e execuções com o provedor configurado. Só 'llm run' com um provedor real envia conteúdo, e somente após autorização explícita."
 
 [llm.prompts]
 help = "Lista os templates de prompt disponíveis com versões e hashes."
@@ -409,7 +412,7 @@ conversation = "Chave da conversa, como foi importada (em arquivos TXT, o nome d
 
 [llm.preview.option]
 source_format = "Formato de origem da conversa quando a mesma chave existe em vários formatos."
-prompt = "Id do template, id@versão ou um arquivo .md. Padrão: [llm] prompt do analyzer.toml."
+prompt = "Id do template, id@versão ou um arquivo .md. Padrão: \\[llm] prompt do analyzer.toml."
 config = "Lê as configurações deste arquivo em vez do analyzer.toml do workspace."
 simulate = "Também executa a requisição no provedor falso offline e mostra o resultado."
 show_content = "Mostra o prompt mascarado. Exige confirmação."
@@ -484,10 +487,11 @@ unknown_template_with_invalid = "Nenhum template válido '{reference}' encontrad
 duplicate_template = "O template '{reference}' está definido mais de uma vez."
 
 [llm.run]
-help = "Classifica conversas com o provedor configurado (milestone 5: só o provedor falso offline), com checkpoints, retomada, reaproveitamento, limites de taxa e orçamentos."
+help = "Classifica conversas com o provedor configurado (fake offline, OpenAI, Anthropic ou um endpoint compatível com OpenAI), com checkpoints, retomada, reaproveitamento, limites de taxa e orçamentos. Provedores reais exigem autorização explícita (--authorize-send)."
 progress = "Jobs de LLM {done}/{total} (falhas {failed}, aguardando reconciliação {reconcile})"
 
 [llm.run.option]
+authorize_send = "Autoriza o envio do conteúdo preparado das conversas a este destino (exatamente a identidade configurada, por exemplo anthropic). Necessário em toda execução com provedor real que possa enviar; nunca remove orçamentos ou limites."
 config = "Lê as configurações deste arquivo em vez do analyzer.toml do workspace."
 conversation = "Só esta chave de conversa. Pode ser repetido. A seleção fica congelada no run."
 run = "Retoma ou reenfileira este ID de run em vez do run que corresponde à configuração e ao escopo atuais."
@@ -495,8 +499,8 @@ force = "Planeja um novo run mesmo que exista um run com a mesma configuração 
 reuse = "Reaproveita resultados de sucesso de requisições idênticas (mesmo provedor e request id). --no-reuse chama o provedor de novo; não cria um novo run por si só."
 retry_failed = "Envia de novo os jobs que falharam. Jobs aguardando reconciliação nunca são incluídos."
 resend_unknown = "Envia de novo os jobs aguardando reconciliação. A tentativa anterior pode já ter sido processada e cobrada."
-concurrency = "Máximo de requisições simultâneas (padrão de [llm.limits], 4)."
-rpm = "Máximo de requisições por minuto (padrão de [llm.limits], 60)."
+concurrency = "Máximo de requisições simultâneas (padrão de \\[llm.limits], 4)."
+rpm = "Máximo de requisições por minuto (padrão de \\[llm.limits], 60)."
 tpm = "Máximo de tokens estimados por minuto (padrão: sem limite)."
 max_tokens = "Para antes que os tokens estimados e informados do run, incluindo reservas, passem deste valor."
 max_cost = "Não despacha uma tentativa quando o custo do run mais as reservas de pior caso (baseadas em tokens estimados) passariam deste valor. Exige uma entrada de preço completa."
@@ -505,6 +509,7 @@ fake_scenario = "Comportamento do provedor falso para desenvolvimento e demonstr
 events = "Grava um evento JSON por linha neste arquivo, ou '-' para stderr (só identificadores e códigos)."
 
 [llm.run.error]
+fake_scenario_real = "--fake-scenario só se aplica ao provedor fake offline, mas há um provedor real configurado."
 max_cost = "--max-cost inválido '{value}': use um valor decimal não negativo, como 1.50."
 fake_scenario = "Cenário falso desconhecido '{value}'. Opções: {choices} (erros como error:TIPO)."
 no_conversations = "Nenhuma conversa selecionada (confira as chaves de --conversation e as importações)."
@@ -515,7 +520,7 @@ not_found = "O run de LLM {run_id} não existe."
 conflicting_options = "--run seleciona um run existente: --conversation e --force não podem ser combinados com ele."
 
 [llm.run.hint]
-budget_unverifiable = "Adicione uma entrada completa (input, output, cache_read, cache_write) ao pricing.toml, ou use --max-tokens."
+budget_unverifiable = "Adicione uma entrada completa (input, output, cache_read, cache_write e as tarifas long_* se ela tiver max_input_tokens) ao pricing.toml, ou use --max-tokens."
 config_changed = "Rode sem --run para planejar um novo run com a configuração atual."
 
 [llm.run.outcome]
@@ -563,3 +568,73 @@ help = "Exporta os jobs de um run de LLM para CSV com um arquivo .meta.json (ró
 written = "{rows} jobs do run de LLM {run_id} gravados em {path}."
 partial = "Este run está {status}: a exportação é um snapshot parcial."
 reconcile = "{count} jobs aguardam reconciliação (coluna needs_reconciliation)."
+
+[consent]
+title = "Autorização necessária: conteúdo de conversas sairá desta máquina."
+destination = "Destino: {identity}  Modelo: {model}"
+summary = "Conversas pendentes: {jobs}. Requisições distintas: {requests} (no máximo {max_requests} tentativas). Pior caso: {tokens} tokens, custo {cost}. Orçamentos e limites continuam valendo."
+cost_unknown = "desconhecido (sem preço completo para este modelo)"
+prompt = "Digite '{identity}' para autorizar o envio, ou Enter para cancelar"
+
+[consent.notice]
+sent = "O texto preparado de cada conversa selecionada (mensagens mascaradas, o prompt e as instruções) é enviado ao destino para classificação."
+masking = "O mascaramento é best-effort, não anonimização: nomes, números ou outros detalhes identificáveis ainda podem ser enviados."
+remote = "O provedor processa os dados segundo seus próprios termos e políticas de retenção."
+loopback = "O endpoint está nesta máquina (loopback), mas o serviço por trás dele pode encaminhar dados para outro lugar; esta ferramenta não consegue verificar isso."
+
+[consent.error]
+required = "O envio para '{identity}' precisa de autorização explícita ({requests} requisições distintas pendentes). Nada foi enviado; a execução está planejada e é retomada quando autorizada."
+declined = "A autorização não foi dada. Nada foi enviado; a execução está planejada e é retomada quando autorizada."
+mismatch = "--authorize-send não indica o destino configurado '{identity}'. Nada foi planejado nem enviado."
+
+[consent.hint]
+flag = "Revise o destino e a estimativa e execute novamente com: {flag}"
+
+[provider.error]
+SDK_ENV_OVERRIDE = "{env} está definida: o SDK adicionaria seus cabeçalhos (até credenciais) a toda requisição, à revelia da configuração."
+PROVIDER_UNKNOWN = "Provedor desconhecido '{provider}'."
+OPTION_UNSUPPORTED = "A opção 'llm.options.{option}' não é suportada pelo provedor '{provider}'. Suportadas: {supported}."
+OPTION_INVALID = "A opção 'llm.options.{option}' tem um valor que o provedor '{provider}' não aceita."
+TEMPERATURE_UNSUPPORTED = "O modelo '{model}' não aceita temperature, mas 'llm.temperature' está definido."
+TEMPERATURE_UNDECLARED = "Não se sabe se o modelo '{model}' aceita temperature, então 'llm.temperature' não pode ser enviado."
+MAX_OUTPUT_EXCEEDS_MODEL = "max_output_tokens é {requested}, mas o modelo '{model}' permite no máximo {maximum}."
+BASE_URL_REQUIRED = "O provedor '{provider}' precisa de 'llm.connection.base_url'."
+BASE_URL_INVALID = "'llm.connection.base_url' não é uma URL http(s) válida."
+BASE_URL_HAS_CREDENTIALS = "'llm.connection.base_url' não pode conter usuário ou senha."
+BASE_URL_HAS_QUERY = "'llm.connection.base_url' não pode conter query string nem fragmento."
+BASE_URL_INSECURE = "'llm.connection.base_url' usa HTTP sem criptografia para '{host}', que não é um endereço de loopback."
+PROVIDER_SDK_MISSING = "O SDK '{package}' não está instalado."
+SDK_DEBUG_LOGGING = "{env} ativa o log de depuração do SDK, que pode imprimir o conteúdo das requisições."
+API_KEY_ENV_REQUIRED = "O provedor '{provider}' precisa de 'llm.connection.api_key_env': o nome da variável de ambiente com a sua chave."
+API_KEY_ENV_INVALID = "'{env}' não é um nome válido de variável de ambiente."
+API_KEY_MISSING = "A variável de ambiente {env} não está definida."
+API_KEY_EMPTY = "A variável de ambiente {env} está vazia."
+API_KEY_MALFORMED = "A variável de ambiente {env} contém espaços ou caracteres de controle."
+
+[provider.hint]
+SDK_ENV_OVERRIDE = "Remova {env} antes de executar; configure o provedor no analyzer.toml."
+PROVIDER_UNKNOWN = "Use fake, openai, anthropic ou openai-compatible (docs/providers.md)."
+OPTION_UNSUPPORTED = "Remova-a de [llm.options]; docs/providers.md lista as opções de cada provedor."
+OPTION_INVALID = "Veja os valores aceitos em docs/providers.md."
+TEMPERATURE_UNSUPPORTED = "Remova 'temperature' de [llm]."
+TEMPERATURE_UNDECLARED = "Remova 'temperature', ou declare temperature = true para este modelo em <workspace>/models.toml se o provedor documentar isso."
+MAX_OUTPUT_EXCEEDS_MODEL = "Reduza 'llm.max_output_tokens' ou corrija max_output_tokens deste modelo em <workspace>/models.toml."
+BASE_URL_REQUIRED = "Defina base_url em [llm.connection], por exemplo https://api.example.com/v1 (docs/providers.md)."
+BASE_URL_INVALID = "Use uma URL como https://api.example.com/v1."
+BASE_URL_HAS_CREDENTIALS = "Coloque a chave na variável de ambiente indicada em api_key_env."
+BASE_URL_HAS_QUERY = "Remova tudo depois de '?' ou '#'; credenciais ficam no ambiente."
+BASE_URL_INSECURE = "Use https://, ou http:// apenas para localhost, 127.0.0.1 ou ::1."
+PROVIDER_SDK_MISSING = "Instale com: pip install 'whatsapp-conversation-analyzer[{package}]'"
+SDK_DEBUG_LOGGING = "Remova {env} (ou use info) antes de executar."
+API_KEY_ENV_REQUIRED = "Adicione api_key_env = \"SUA_VARIAVEL\" em [llm.connection] e exporte essa variável."
+API_KEY_ENV_INVALID = "Use apenas letras, dígitos e _, por exemplo MINHA_CHAVE_LLM."
+API_KEY_MISSING = "Exporte antes a sua própria chave, por exemplo: export {env}=... (esta ferramenta nunca grava a chave em arquivo)."
+API_KEY_EMPTY = "Exporte uma chave não vazia em {env}."
+API_KEY_MALFORMED = "Exporte a chave novamente em {env}, sem espaços ou quebras de linha ao redor."
+
+[provider.notice]
+MODEL_NOT_IN_CATALOG = "Este modelo não está no catálogo: seus limites são desconhecidos. Declare-os em <workspace>/models.toml (docs/providers.md)."
+STRUCTURED_OUTPUT_UNDECLARED = "O suporte do modelo a saída estruturada não foi declarado: o JSON é pedido apenas pelo prompt e verificado localmente. Declare structured_output em <workspace>/models.toml."
+CONTEXT_WINDOW_UNKNOWN = "A janela de contexto do modelo é desconhecida; os prompts não são verificados contra ela."
+PRICE_MISSING = "Não há preço configurado para este modelo: os custos são desconhecidos e --max-cost não pode ser usado. Adicione-o em <workspace>/pricing.toml."
+PRICE_STALE = "O preço deste modelo tem mais de 90 dias e pode estar desatualizado. Confira a página de preços do provedor e atualize <workspace>/pricing.toml."

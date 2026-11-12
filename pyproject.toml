@@ -25,12 +25,20 @@ dependencies = [
     "openpyxl>=3.1",
 ]
 
+[project.optional-dependencies]
+# Official SDKs of the real LLM providers. The base install needs none of them.
+openai = ["openai>=3.49,<4"]
+anthropic = ["anthropic>=2.7,<3"]
+providers = ["openai>=3.49,<4", "anthropic>=2.7,<3"]
+
 [project.scripts]
 whatsapp-analyzer = "whatsapp_analyzer.cli.app:main"
 
 [dependency-groups]
 dev = [
+    "anthropic>=2.7,<3",
     "mypy>=1.13",
+    "openai>=3.49,<4",
     "pytest>=8.3",
     "pytest-socket>=0.7",
     "ruff>=0.8",
@@ -76,3 +84,6 @@ ignore_missing_imports = true
 testpaths = ["tests"]
 addopts = "-ra --strict-markers --disable-socket --allow-unix-socket"
 xfail_strict = true
+markers = [
+    "live: real provider calls; skipped unless explicitly authorized (see tests/live/README.md)",
+]

@@ -1,7 +1,13 @@
-"""`llm run`, `llm status` and `llm export`: the persistent runner (offline FakeProvider only).
+"""`llm run`, `llm status` and `llm export`: the persistent runner.
+
+The provider comes from `[llm]` in the configuration: the offline `fake` provider, or a real
+one (`openai`, `anthropic`, `openai-compatible`). A real provider is checked completely
+(options, capabilities, endpoint, SDK, API key) before anything is planned, and content is
+sent only after explicit authorization (`cli.consent`).
 
 Exit codes: 0 completed; 8 completed with failed or unreconciled jobs; 7 budget reached;
-5 paused by an account error; 6 interrupted (resumable). With `--events FILE` (or `-` for
+5 paused by an account error; 6 interrupted (resumable); 4 invalid provider configuration;
+12 authorization required. With `--events FILE` (or `-` for
 stderr) one JSON object per event is written, with identifiers and codes only; stdout still
 carries exactly one JSON document with `--json`.
 """
@@ -22,6 +28,7 @@ import typer
 from rich.progress import Progress, TaskID
 from rich.table import Table
 
+from whatsapp_analyzer.cli import consent
 from whatsapp_analyzer.cli.commands.llm import PRICING_FILE, PROMPTS_DIR, prompt_error
 from whatsapp_analyzer.cli.output import (
     CliState,
@@ -42,9 +49,18 @@ from whatsapp_analyzer.config import ConfigError, LimitSettings, Settings
 from whatsapp_analyzer.errors import AppError
 from whatsapp_analyzer.exit_codes import ExitCode
 from whatsapp_analyzer.i18n import t
+from whatsapp_analyzer.llm.call import Generation
+from whatsapp_analyzer.llm.catalog import MODELS_FILE, load_catalog
 from whatsapp_analyzer.llm.fake import FakeProvider, FakeScenario
 from whatsapp_analyzer.llm.pricing import load_prices
 from whatsapp_analyzer.llm.prompts import PromptError, find_template
+from whatsapp_analyzer.llm.provider import Provider
+from whatsapp_analyzer.llm.providers import (
+    BuiltProvider,
+    ProviderSetupError,
+    build_provider,
+    is_external,
+)
 from whatsapp_analyzer.llm.types import ErrorKind
 from whatsapp_analyzer.runner.engine import EngineOptions
 from whatsapp_analyzer.runner.model import Event, RunStatus, SystemClock
@@ -55,9 +71,13 @@ from whatsapp_analyzer.runner.service import (
     ConflictingOptionsError,
     OpenedRun,
     OpenRequest,
+    apply_requeue,
     execute,
     open_run,
+    requeue_statuses,
+    send_estimate,
 )
+from whatsapp_analyzer.store.db import transaction
 from whatsapp_analyzer.store.lock import WorkspaceBusyError
 from whatsapp_analyzer.workspace import Workspace
 
@@ -111,14 +131,32 @@ def run(
     events: Annotated[
         str | None, typer.Option(metavar="FILE|-", help=t("llm.run.option.events"))
     ] = None,
+    authorize_send: Annotated[
+        str | None,
+        typer.Option(
+            "--authorize-send", metavar="DESTINATION", help=t("llm.run.option.authorize_send")
+        ),
+    ] = None,
 ) -> None:
     state: CliState = ctx.obj
     target = resolve_workspace(workspace)
     settings = load_settings(target, config)
     overrides = _overrides(concurrency, rpm, tpm, max_tokens, max_cost, max_attempts)
     limits = replace(settings.llm.limits, **overrides)
-    provider = _provider(fake_scenario)
-    run_config = replace(_run_config(target, settings, prompt, limits), provider=provider.name)
+    run_config = _run_config(target, settings, prompt, limits)
+    built: BuiltProvider | None = None
+    provider: Provider
+    if is_external(settings.llm.provider):
+        if fake_scenario is not None:
+            raise AppError(
+                "INCOMPATIBLE_OPTIONS", ExitCode.USAGE_ERROR, t("llm.run.error.fake_scenario_real")
+            )
+        built, run_config = _real_provider(target, settings, run_config)
+        provider = built.provider
+    else:
+        provider = _provider(fake_scenario)
+        run_config = replace(run_config, provider=provider.name)
+    consent.check_flag(authorize_send, run_config.provider)  # before anything is planned
     request = OpenRequest(
         keys=tuple(conversation) if conversation else None,
         run_id=run_id,
@@ -131,7 +169,10 @@ def run(
         stack.enter_context(writer_lock(target))
         connection = open_database(target)
         stack.callback(connection.close)
-        opened = _open(connection, run_config, request)
+        # With a real provider, explicit re-sends are requeued only after this invocation is
+        # authorized: a refused authorization must not leave them pending for the next one.
+        opened = _open(connection, run_config, request, defer_requeue=built is not None)
+        notices = _notices(built, opened.config)  # a resumed run keeps its price snapshot
         sink = _event_sink(stack, events)
         quiet = events == "-"  # events on stderr: no progress bar to interleave with
         status = RunStatus(
@@ -139,6 +180,11 @@ def run(
                 "SELECT status FROM llm_runs WHERE id = ?", (opened.run_id,)
             ).fetchone()[0]
         )
+        authorization = _authorize(
+            state, connection, opened, built, authorize_send, notices, request
+        )
+        if built is not None and authorization is not None:
+            opened = apply_requeue(connection, opened, retry_failed, resend_unknown)
         if opened.mode in {"new", "resumed"}:
             progress = None if quiet else _progress(stack, state, connection, opened.run_id)
             options = EngineOptions(
@@ -159,6 +205,9 @@ def run(
         "status": status.value,
         "recovered_attempts": opened.recovered_attempts,
         "requeued": opened.requeued,
+        "destination": run_config.provider,
+        "authorization": authorization,
+        "notices": notices,
         **report,
     }
     failure = _failure(status, report)
@@ -166,6 +215,10 @@ def run(
         write_json(result_payload("llm run", data, failure))
     else:
         _render(data)
+        for notice in notices:
+            stderr_console().print(
+                t(f"provider.notice.{notice}"), style="yellow", highlight=False, markup=False
+            )
         if failure is not None:
             stderr_console().print(failure.message, style="yellow", highlight=False)
     raise typer.Exit(EXIT_FOR_STATUS[status])
@@ -325,7 +378,105 @@ def _run_config(
         ignored_texts=settings.metrics.ignored_texts,
         limits=limits,
         price=prices.lookup(settings.llm.provider, settings.llm.model, date.today()),
+        generation_settings=Generation(
+            max_output_tokens=settings.llm.max_output_tokens,
+            temperature=settings.llm.temperature,
+        ),
+        timeout_seconds=settings.llm.connection.timeout_seconds,
     )
+
+
+def _authorize(
+    state: CliState,
+    connection: sqlite3.Connection,
+    opened: OpenedRun,
+    built: BuiltProvider | None,
+    flag_value: str | None,
+    notices: list[str],
+    request: OpenRequest,
+) -> str | None:
+    """Authorization of this invocation, when it may send content to a real provider: pending
+    jobs, and the jobs that --retry-failed / --resend-unknown would requeue."""
+    if built is None:
+        return None
+    statuses = requeue_statuses(request.retry_failed, request.resend_unknown)
+    estimate = send_estimate(connection, opened, statuses)
+    if not estimate.jobs:
+        return None
+    try:
+        method = consent.authorize(
+            state,
+            identity=built.identity,
+            model=opened.config.model,
+            loopback=built.loopback,
+            estimate=estimate,
+            flag_value=flag_value,
+        )
+    except AppError as exc:
+        # Nothing was sent. The run is left resumable and NOT `running`: a running run found
+        # by the next writer would be taken for a crash.
+        with transaction(connection):
+            connection.execute(
+                "UPDATE llm_runs SET status = 'interrupted', stop_reason = ? "
+                "WHERE id = ? AND status = 'running'",
+                (exc.code, opened.run_id),
+            )
+        if exc.details is not None:
+            exc.details = {"run_id": opened.run_id, "notices": notices, **exc.details}
+        raise
+    consent.record(connection, opened.run_id, method, built.identity, opened.config.model)
+    return method
+
+
+def _real_provider(
+    workspace: Workspace, settings: Settings, run_config: RunConfig
+) -> tuple[BuiltProvider, RunConfig]:
+    """Build and check a real provider; the run config gets its identity and parameters."""
+    llm = settings.llm
+    try:
+        info = load_catalog(workspace.root / MODELS_FILE).lookup(llm.provider, llm.model)
+    except ConfigError as exc:
+        raise config_error(exc) from exc
+    try:
+        built = build_provider(
+            llm.provider,
+            llm.model,
+            info=info,
+            max_output_tokens=run_config.max_output_tokens,
+            temperature=llm.temperature,
+            options=llm.options,
+            api_key_env=llm.connection.api_key_env,
+            base_url=llm.connection.base_url,
+            timeout_seconds=llm.connection.timeout_seconds,
+        )
+    except ProviderSetupError as exc:
+        raise provider_setup_error(exc) from exc
+    generation = replace(run_config.generation_settings, params=built.params)
+    return built, replace(
+        run_config, provider=built.identity, generation_settings=generation, model_info=info
+    )
+
+
+def provider_setup_error(exc: ProviderSetupError) -> AppError:
+    return AppError(
+        exc.code,
+        ExitCode.CONFIG_ERROR,
+        t(f"provider.error.{exc.code}", **exc.details),
+        hint=t(f"provider.hint.{exc.code}", **exc.details),
+        details={"setup_error": exc.code, **{k: str(v) for k, v in exc.details.items()}},
+    )
+
+
+def _notices(built: BuiltProvider | None, run_config: RunConfig) -> list[str]:
+    """Things a person or an agent should know before trusting the numbers of a run."""
+    if built is None:
+        return []
+    notices = list(built.notices)
+    if run_config.price is None:
+        notices.append("PRICE_MISSING")
+    elif run_config.price.stale(date.today()):
+        notices.append("PRICE_STALE")
+    return notices
 
 
 def _provider(scenario: str | None) -> FakeProvider:
@@ -345,9 +496,11 @@ def _provider(scenario: str | None) -> FakeProvider:
     return FakeProvider(chosen, error_kind=error_kind)
 
 
-def _open(connection: sqlite3.Connection, config: RunConfig, request: OpenRequest) -> OpenedRun:
+def _open(
+    connection: sqlite3.Connection, config: RunConfig, request: OpenRequest, defer_requeue: bool
+) -> OpenedRun:
     try:
-        return open_run(connection, config, request)
+        return open_run(connection, config, request, defer_requeue=defer_requeue)
     except NothingSelectedError as exc:
         raise AppError(
             "NO_CONVERSATIONS",
@@ -361,6 +514,17 @@ def _open(connection: sqlite3.Connection, config: RunConfig, request: OpenReques
             ExitCode.CONFIG_ERROR,
             t("llm.run.error.budget_unverifiable"),
             hint=t("llm.run.hint.budget_unverifiable"),
+            details={
+                "provider": config.provider,
+                "model": config.model,
+                "price": None if config.price is None else "incomplete",
+                "needs": ["input", "output", "cache_read", "cache_write"]
+                + (
+                    ["long_input", "long_cache_read", "long_cache_write", "long_output"]
+                    if config.price is not None and config.price.max_input_tokens is not None
+                    else []
+                ),
+            },
         ) from exc
     except RunConfigChangedError as exc:
         raise AppError(

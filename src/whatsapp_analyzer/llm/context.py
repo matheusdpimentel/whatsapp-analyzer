@@ -60,7 +60,9 @@ _DELIMITER = re.compile(r"</?\s*conversation", re.IGNORECASE)
 class ContextError(Exception):
     def __init__(self, kind: str) -> None:
         super().__init__(kind)
-        self.kind = kind  # GROUP_EXCLUDED, NO_MESSAGES, CONTEXT_BUDGET_EXCEEDED
+        self.kind = (
+            kind  # GROUP_EXCLUDED, NO_MESSAGES, CONTEXT_BUDGET_EXCEEDED, MODEL_CONTEXT_EXCEEDED
+        )
 
 
 @dataclass(frozen=True)

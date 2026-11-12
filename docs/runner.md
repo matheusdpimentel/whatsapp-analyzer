@@ -4,11 +4,10 @@
 checkpoints every attempt, resumes where it stopped, reuses earlier results, isolates
 individual failures, respects rate limits and budgets, and can be exported while it runs.
 
-Milestone 5 runs only the offline `FakeProvider`. Nothing is sent to any network or paid
-service, and the project collects no telemetry. Cost controls are meant for the external APIs
-that milestone 6 may let you configure. Milestone 6 must also ask for explicit,
-provider-specific authorization before any content leaves the machine (see
-[llm.md](llm.md)).
+The provider is the offline `FakeProvider` by default. Since milestone 6 it can also be a real
+provider ([providers.md](providers.md)); the runner itself is unchanged. With a real
+provider, every invocation that may send content needs explicit authorization
+(`--authorize-send` or an interactive confirmation), and the project collects no telemetry.
 
 ## Commands
 
@@ -136,7 +135,7 @@ Each attempt also records its billing:
 | `not_sent` | The request never left the machine (the adapter says so) | Yes, if the error is retryable |
 | `rejected` | The provider refused it before processing (`RATE_LIMITED`, `OVERLOADED`, account errors, `INVALID_REQUEST`, `CONTEXT_TOO_LONG`) | Only `RATE_LIMITED` and `OVERLOADED` |
 | `billed` | A response came back (success, invalid output, refusal, truncation) | No; `--retry-failed` resends a failed one |
-| `unknown` | It may have been processed: `TIMEOUT`, `NETWORK`, `SERVER_ERROR`, `MALFORMED_PROVIDER_RESPONSE`, `ADAPTER_ERROR`, cancellation after sending, or a crash | **Never**; only `--resend-unknown` |
+| `unknown` | It may have been processed: `TIMEOUT`, `NETWORK`, `SERVER_ERROR`, `MALFORMED_PROVIDER_RESPONSE`, `ADAPTER_ERROR`, `ENDPOINT_ERROR` (any HTTP error from a non-official endpoint), cancellation after sending, or a crash | **Never**; only `--resend-unknown` |
 
 A job whose attempt ended `unknown` becomes `awaiting_reconciliation`:
 
@@ -278,10 +277,21 @@ for synthetic content.
 
 Conversation keys are escaped against spreadsheet formulas.
 
+## Budget of resumed runs
+
+When a run starts or resumes, the ledger is rebuilt from its attempts. Each billed attempt
+counts at least the cost of its stored usage at the run's price snapshot, and each in-flight
+or unknown reservation at least its stored reserved tokens at the snapshot's worst-case rate.
+For a run whose snapshot never changed this is exactly what was recorded. When a snapshot
+gained a price tier it lacked (see [providers.md](providers.md#tokens-and-costs)), attempts
+recorded at the cheaper rate count at the applicable one before anything else is dispatched.
+The recorded costs are never rewritten; `budget.cost_adjustment` reports the difference.
+
 ## Limitations
 
-- **Fake provider only.** Billing classification for real providers depends on adapters
-  (milestone 6) reporting `request_sent` accurately.
+- **Billing classes of real providers** depend on each adapter reporting `request_sent`
+  accurately; ambiguous transport failures stay `unknown` (see
+  [providers.md](providers.md#errors)).
 - **Ctrl+C.** In-flight attempts become `unknown` even when the fake provider would have
   answered.
 - **Token limits.** Based on estimates (see above).

@@ -3,8 +3,14 @@
 - `run_key` hashes everything that shapes the requests: provider, model, template (id,
   version, hash), context settings, masking version, ignored texts, output schema and
   generation parameters. The `request_id` of each job (from `llm.call.build_request`) covers
-  the rendered prompt, the context hash, the model, the output schema, `max_output_tokens`
-  and `temperature`.
+  the rendered prompt, the context hash, the model, the output schema, `max_output_tokens`,
+  `temperature` and provider-specific parameters (options, structured output mode).
+- A job whose estimated prompt cannot fit the model's known context window (with a safety
+  margin, because local estimates differ from each provider's tokenizer) is skipped with
+  `MODEL_CONTEXT_EXCEEDED` instead of being sent. Unknown limits are not checked. When a
+  price entry has a tier ceiling (`max_input_tokens`) but no long-context rates, a job whose
+  prompt may exceed it is skipped with `PRICE_TIER_EXCEEDED`, so it is never costed at a
+  too-low rate; with long rates, the tier is chosen per request (`llm.pricing`).
 - The scope is frozen when a run is planned: one job per selected conversation version, by
   immutable version id. Later imports create new versions and never change an existing run.
 - Running again with the same key and the same scope resumes the latest such run (or reports
@@ -21,12 +27,14 @@ from decimal import Decimal
 from whatsapp_analyzer import __version__
 from whatsapp_analyzer.config import ContextSettings, LimitSettings
 from whatsapp_analyzer.hashing import canonical_json, config_hash, sha256_hex
-from whatsapp_analyzer.llm.call import TEMPERATURE, build_request
+from whatsapp_analyzer.llm.call import DEFAULT_TIMEOUT_SECONDS, Generation, build_request
+from whatsapp_analyzer.llm.catalog import ModelInfo
 from whatsapp_analyzer.llm.context import ContextError, PreparedContext, build_context
 from whatsapp_analyzer.llm.masking import MASKING_VERSION, name_from_key
 from whatsapp_analyzer.llm.output import OUTPUT_SCHEMA_ID
-from whatsapp_analyzer.llm.pricing import Price
+from whatsapp_analyzer.llm.pricing import LONG_RATE_FIELDS, Price
 from whatsapp_analyzer.llm.prompts import PromptTemplate
+from whatsapp_analyzer.llm.tokens import estimate_prompt_tokens
 from whatsapp_analyzer.llm.types import LLMRequest
 from whatsapp_analyzer.metrics.raw import StoredMessage
 from whatsapp_analyzer.metrics.runner import messages_of
@@ -35,6 +43,7 @@ from whatsapp_analyzer.store.db import transaction, utc_now
 
 RUNNER_VERSION = 1
 PLAN_BATCH = 500
+CONTEXT_SAFETY_MARGIN = 1.25  # estimated prompt tokens are multiplied by this before checking
 
 
 @dataclass(frozen=True)
@@ -46,6 +55,13 @@ class RunConfig:
     ignored_texts: tuple[str, ...]
     limits: LimitSettings
     price: Price | None
+    generation_settings: Generation = Generation()  # noqa: RUF009  (frozen, immutable)
+    timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS
+    model_info: ModelInfo | None = None  # known limits of the model, for the context check
+
+    @property
+    def max_output_tokens(self) -> int:
+        return self.generation_settings.max_output_tokens or self.template.max_output_tokens
 
     def context_config_hash(self) -> str:
         return config_hash(
@@ -55,11 +71,14 @@ class RunConfig:
         )
 
     def generation(self) -> dict[str, object]:
-        return {
-            "max_output_tokens": self.template.max_output_tokens,
-            "temperature": TEMPERATURE,
+        values: dict[str, object] = {
+            "max_output_tokens": self.max_output_tokens,
+            "temperature": self.generation_settings.temperature,
             "output_schema": OUTPUT_SCHEMA_ID,
         }
+        if self.generation_settings.params:
+            values["provider_params"] = dict(self.generation_settings.params)
+        return values
 
     def run_key(self) -> str:
         return config_hash(
@@ -124,8 +143,38 @@ def prepare(config: RunConfig, selected: Selected, messages: list[StoredMessage]
         ignored_texts=config.ignored_texts,
         contact_names=[name_from_key(selected.conversation_key)],
     )
-    _, request = build_request(config.template, context, config.model)
+    _, request = build_request(
+        config.template,
+        context,
+        config.model,
+        timeout_seconds=config.timeout_seconds,
+        generation=config.generation_settings,
+    )
+    if config.model_info is not None and not fits_model(request, config.model_info):
+        raise ContextError("MODEL_CONTEXT_EXCEEDED")
+    price = config.price
+    if (
+        price is not None
+        and price.max_input_tokens is not None
+        and not price.has_long_rates
+        and _padded_input(request) > price.max_input_tokens
+    ):
+        # A higher tier would apply and the entry cannot price it: skip, never under-cost.
+        raise ContextError("PRICE_TIER_EXCEEDED")
     return PreparedJob(context, request)
+
+
+def _padded_input(request: LLMRequest) -> int:
+    estimated = estimate_prompt_tokens(request.system, [m.content for m in request.messages])
+    return int(estimated * CONTEXT_SAFETY_MARGIN)
+
+
+def fits_model(request: LLMRequest, info: ModelInfo) -> bool:
+    """False when the request certainly or probably exceeds a known limit of the model."""
+    padded = _padded_input(request)
+    if info.max_input_tokens is not None and padded > info.max_input_tokens:
+        return False
+    return info.context_window is None or padded + request.max_output_tokens <= info.context_window
 
 
 def iter_prepared(
@@ -259,6 +308,12 @@ def price_json(price: Price | None) -> str | None:
             "effective_from": price.effective_from.isoformat(),
             "source": price.source,
             "origin": price.origin,
+            "retrieved_at": price.retrieved_at.isoformat() if price.retrieved_at else None,
+            "max_input_tokens": price.max_input_tokens,
+            **{
+                name: None if getattr(price, name) is None else str(getattr(price, name))
+                for name in LONG_RATE_FIELDS
+            },
         }
     )
 
@@ -286,4 +341,10 @@ def price_from_json(text: str | None) -> Price | None:
         effective_from=date.fromisoformat(data["effective_from"]),
         source=data["source"],
         origin=data["origin"],
+        retrieved_at=date.fromisoformat(data["retrieved_at"]) if data.get("retrieved_at") else None,
+        max_input_tokens=data.get("max_input_tokens"),
+        **{
+            name: None if data.get(name) is None else Decimal(data[name])
+            for name in LONG_RATE_FIELDS
+        },
     )

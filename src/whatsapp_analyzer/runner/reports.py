@@ -18,6 +18,7 @@ from whatsapp_analyzer.fileio import atomic_write_files
 from whatsapp_analyzer.ingest.csv_export import escape_formula
 from whatsapp_analyzer.runner.ledger import load_ledger
 from whatsapp_analyzer.runner.model import RESUMABLE, JobStatus, RunStatus
+from whatsapp_analyzer.runner.plan import price_from_json
 from whatsapp_analyzer.store.db import read_snapshot, utc_now
 
 EXPORT_SCHEMA = 1
@@ -101,6 +102,7 @@ def _report(connection: sqlite3.Connection, run: sqlite3.Row) -> dict[str, objec
         run_id,
         limits.get("max_tokens"),
         None if limits.get("max_cost") is None else Decimal(limits["max_cost"]),
+        price_from_json(run["price_json"]),
     )
     price = json.loads(run["price_json"]) if run["price_json"] else None
     costs = ledger.costs()
@@ -149,6 +151,9 @@ def _report(connection: sqlite3.Connection, run: sqlite3.Row) -> dict[str, objec
                 ledger.consumed_tokens + ledger.inflight_tokens + ledger.unknown_tokens
             ),
             "committed_cost": costs["committed"],
+            # budget cost above the recorded costs of earlier attempts: they were recorded at
+            # a rate the run's price snapshot no longer accepts (see docs/providers.md)
+            "cost_adjustment": costs["adjustment"],
             "note": "reservations use local token estimates; a guide, not a guarantee for "
             "real providers",
         },

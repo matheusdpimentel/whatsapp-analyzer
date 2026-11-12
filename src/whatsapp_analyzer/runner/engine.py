@@ -168,7 +168,9 @@ class Engine:
         self.hooks = options.hooks or Hooks()
         self.progress = options.progress
         limits = config.limits
-        self.ledger: Ledger = load_ledger(connection, run_id, limits.max_tokens, limits.max_cost)
+        self.ledger: Ledger = load_ledger(
+            connection, run_id, limits.max_tokens, limits.max_cost, config.price
+        )
         self.rate = worst_case_rate(config.price)
         self.limiter = RateLimiter(limits.requests_per_minute, limits.tokens_per_minute, clock)
         self.slots = asyncio.Semaphore(limits.concurrency)

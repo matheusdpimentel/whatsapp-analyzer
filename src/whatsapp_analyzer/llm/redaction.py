@@ -9,6 +9,8 @@ import re
 from collections.abc import Mapping
 
 CREDENTIAL_ENV_VARS = ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_COMPAT_API_KEY")
+# Custom variables named by `llm.connection.api_key_env`, added when a key is read from them.
+_EXTRA_CREDENTIAL_ENV_VARS: set[str] = set()
 REDACTED = "[REDACTED]"
 _MIN_SECRET_LENGTH = 8
 
@@ -48,10 +50,18 @@ class SecretValue:
     def __hash__(self) -> int:
         return hash(("SecretValue", self._value))
 
+    def __reduce__(self) -> tuple[object, ...]:  # never pickled into a file by accident
+        raise TypeError("SecretValue cannot be serialized")
+
+
+def register_credential_env(name: str) -> None:
+    """Also redact the value of `name` (a custom API key variable) from now on."""
+    _EXTRA_CREDENTIAL_ENV_VARS.add(name)
+
 
 def redact(text: str, environ: Mapping[str, str] | None = None) -> str:
     environ = os.environ if environ is None else environ
-    for name in CREDENTIAL_ENV_VARS:
+    for name in (*CREDENTIAL_ENV_VARS, *sorted(_EXTRA_CREDENTIAL_ENV_VARS)):
         value = environ.get(name, "")
         if len(value) >= _MIN_SECRET_LENGTH:
             text = text.replace(value, REDACTED)

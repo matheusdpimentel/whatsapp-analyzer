@@ -4,11 +4,17 @@ A local, terminal-based tool for processing, analyzing and classifying WhatsApp 
 exports. It computes deterministic engagement metrics and can optionally classify conversations
 with an LLM provider that you configure.
 
-> **Status: early development (milestone 5).** Conversations can be imported, validated and
+> **Status: early development (milestone 6).** Conversations can be imported, validated and
 > stored in a local workspace; deterministic engagement metrics can be computed, compared and
 > exported; and LLM classification runs as a persistent, resumable, budgeted job with the
-> offline fake provider. Real providers come in milestone 6. Architecture decisions are
-> recorded in [`docs/adr/`](docs/adr/).
+> offline fake provider or a real provider (OpenAI, Anthropic or an OpenAI-compatible
+> endpoint) using your own key. See [`docs/roadmap.md`](docs/roadmap.md); architecture
+> decisions are recorded in [`docs/adr/`](docs/adr/).
+
+The tool is free and open source. There is no backend, account or subscription: with a real
+provider you bring your own key (BYOK) and the provider bills you directly. AI agents can
+operate it through the CLI: see [`AGENTS.md`](AGENTS.md) and
+[`docs/agent-usage.md`](docs/agent-usage.md).
 
 This project is not affiliated with, endorsed by, or sponsored by WhatsApp or Meta.
 
@@ -70,7 +76,7 @@ Re-importing unchanged conversations does nothing, and earlier results remain tr
 data version they were computed from. Definitions, configuration, caching rules and the export
 format are in [`docs/metrics.md`](docs/metrics.md).
 
-### LLM core (offline preview)
+### LLM classification
 
 ```bash
 whatsapp-analyzer llm prompts                          # prompt templates, versions, hashes
@@ -89,9 +95,36 @@ reuse earlier results, never resend an attempt whose outcome is unknown without
 `--resend-unknown`, and stop before exceeding token or cost budgets. See
 [`docs/runner.md`](docs/runner.md).
 
-Nothing is sent to any provider yet: the only provider is an offline fake. The preview shows no message content unless you ask for it
-with `--show-content` or `--out` and confirm. Identifiers are masked, but masking is
-pseudonymization, not anonymization. See [`docs/llm.md`](docs/llm.md).
+The default provider is an offline fake: nothing leaves the machine. To use a real provider,
+install its SDK and point the configuration at the environment variable that holds your key:
+
+```bash
+pip install 'whatsapp-conversation-analyzer[anthropic]'    # or [openai], [providers]
+export ANTHROPIC_API_KEY="your-own-key"
+```
+
+```toml
+# analyzer.toml
+[llm]
+provider = "anthropic"            # openai | anthropic | openai-compatible | fake
+model = "claude-haiku-5-5"        # any model id; known limits are in the model catalog
+[llm.connection]
+api_key_env = "ANTHROPIC_API_KEY" # the variable's NAME, never the key
+```
+
+```bash
+whatsapp-analyzer llm run -w ./analysis --max-cost 1.00             # shows what would be sent, asks
+whatsapp-analyzer --json llm run -w ./analysis --authorize-send anthropic   # non-interactive
+```
+
+Every run that may send content needs explicit authorization for that invocation: typed in
+a terminal, or `--authorize-send` with the exact destination. Without it nothing is sent and
+the command exits with code 12, reporting the estimate. Masking is best-effort
+pseudonymization, not anonymization. The preview shows no message content unless you ask
+for it with `--show-content` or `--out` and confirm. See
+[`docs/providers.md`](docs/providers.md) (configuration, models, endpoints, costs),
+[`docs/llm.md`](docs/llm.md) and
+[`docs/adding-a-provider.md`](docs/adding-a-provider.md) to support another provider.
 
 ### Synthetic demo data
 
@@ -128,22 +161,24 @@ Failures add an `error` object with a stable English `code`, a localized `messag
 | 3 | Input validation failed |
 | 4 | Invalid configuration |
 | 5 | Provider account error (credentials, billing, quota, model access) |
-| 6 | Run paused or interrupted; it can be resumed |
+| 6 | Run interrupted (Ctrl+C or a crash); it can be resumed |
 | 7 | Budget limit reached |
-| 8 | Run finished with failed items |
+| 8 | Run finished with failed items or items awaiting reconciliation |
 | 9 | Environment check failed |
 | 10 | Calibration required before a full LLM run |
 | 11 | Output could not be written (permissions, invalid path, full disk) |
+| 12 | Sending content to a provider needs explicit authorization (`--authorize-send`) |
 | 130 | Interrupted by the user (an interrupted `metrics run` resumes when run again) |
 
-Codes 5 to 8 are used by `llm run` (see [`docs/runner.md`](docs/runner.md)); code 10 is
-reserved for a later milestone. Code 4 covers
-invalid `analyzer.toml` files and missing or incompatible workspaces.
+Codes 5 to 8 and 12 are used by `llm run` (see [`docs/runner.md`](docs/runner.md) and
+[`docs/providers.md`](docs/providers.md)); code 10 is reserved for a later milestone. Code 4
+covers invalid `analyzer.toml` files, missing or incompatible workspaces and provider
+configuration errors (missing key, unsupported option, invalid endpoint, ...).
 
 ## Development
 
 ```bash
-uv run pytest            # tests (network access is blocked)
+uv run pytest            # tests (network access is blocked; no paid calls, see tests/live/)
 uv run ruff check        # lint
 uv run ruff format       # format
 uv run mypy              # type check (strict)
@@ -151,13 +186,16 @@ uv run mypy              # type check (strict)
 
 ## Privacy
 
-The analyzer runs locally and sends no data anywhere. Reports show counts and codes, never
+The analyzer runs locally and has no telemetry. Conversation content is sent only to the LLM
+provider you configure, directly from your machine, and only after you authorize it for
+that run. Reports show counts and codes, never
 message text; file names are hidden unless `--show-file-names` is given. `doctor` only reports
 whether provider credentials are set, never their values. A normalized CSV contains your
 messages: keep it as private as the original exports. The same applies to a workspace
 (`analyzer.db` stores the messages) and to score exports, which contain conversation keys.
-Workspaces are created readable only by you and with a `.gitignore` that excludes everything. Keep API keys in environment variables or a local
-`.env` file (see `.env.example`); never pass them as command-line arguments.
+Workspaces are created readable only by you and with a `.gitignore` that excludes everything. Keep API keys in environment variables (see
+`.env.example`); the configuration names the variable, and the key is never written to the
+workspace, logs or exports. Never pass keys as command-line arguments.
 
 ## License
 

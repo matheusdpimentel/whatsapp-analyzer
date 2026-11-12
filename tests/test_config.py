@@ -159,9 +159,28 @@ def test_ignored_texts_are_hashed_as_applied() -> None:
 @pytest.mark.parametrize(
     ("data", "kind", "key"),
     [
-        ({"llm": {"provider": "openai"}}, "invalid_choice", "llm.provider"),
+        ({"llm": {"provider": "gemini"}}, "invalid_choice", "llm.provider"),
         ({"llm": {"model": ""}}, "wrong_type", "llm.model"),
-        ({"llm": {"temperature": 0}}, "unknown_key", "llm.temperature"),
+        ({"llm": {"temperature": 3}}, "out_of_range", "llm.temperature"),
+        ({"llm": {"top_p": 0.5}}, "unknown_key", "llm.top_p"),
+        ({"llm": {"max_output_tokens": 0}}, "out_of_range", "llm.max_output_tokens"),
+        (
+            {"llm": {"connection": {"api_key_env": "MY-KEY"}}},
+            "invalid_env_name",
+            "llm.connection.api_key_env",
+        ),
+        (
+            {"llm": {"connection": {"api_key": "sk-secret"}}},
+            "unknown_key",
+            "llm.connection.api_key",
+        ),
+        ({"llm": {"connection": {"base_url": ""}}}, "wrong_type", "llm.connection.base_url"),
+        (
+            {"llm": {"connection": {"timeout_seconds": 0}}},
+            "out_of_range",
+            "llm.connection.timeout_seconds",
+        ),
+        ({"llm": {"options": {"effort": ["low"]}}}, "wrong_type", "llm.options.effort"),
         ({"llm": {"context": {"max_messages": 0}}}, "out_of_range", "llm.context.max_messages"),
         (
             {"llm": {"context": {"include_groups": "no"}}},

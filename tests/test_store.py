@@ -195,8 +195,34 @@ def test_upgrade_from_schema_1_keeps_data(tmp_path: Path, monkeypatch: pytest.Mo
     connection.close()
     monkeypatch.setattr(db, "MIGRATIONS", migrations.MIGRATIONS)
     connection = connect(path)
-    assert schema_version(connection) == LATEST_VERSION == 2
+    assert schema_version(connection) == LATEST_VERSION == 3
     assert connection.execute("SELECT count(*) FROM metric_configs").fetchone()[0] == 1
     tables = {r[0] for r in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-    assert {"llm_runs", "llm_jobs", "llm_attempts"} <= tables
+    assert {"llm_runs", "llm_jobs", "llm_attempts", "llm_authorizations"} <= tables
+    connection.close()
+
+
+def test_upgrade_from_schema_2_keeps_runs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Migration 3 is additive: an M5 database keeps its runs and gains the audit table."""
+    path = tmp_path / "analyzer.db"
+    sqlite3.connect(path).close()
+    monkeypatch.setattr(db, "MIGRATIONS", migrations.MIGRATIONS[:2])
+    connection = connect(path)
+    before = connection.execute("SELECT sql FROM sqlite_master ORDER BY name").fetchall()
+    connection.close()
+    monkeypatch.setattr(db, "MIGRATIONS", migrations.MIGRATIONS)
+    connection = connect(path)
+    assert schema_version(connection) == 3
+    after = connection.execute("SELECT sql FROM sqlite_master ORDER BY name").fetchall()
+    assert set(before) <= set(after)  # nothing existing was altered
+    columns = {r[1] for r in connection.execute("PRAGMA table_info(llm_authorizations)")}
+    assert columns == {
+        "id",
+        "run_id",
+        "authorized_at",
+        "method",
+        "provider",
+        "model",
+        "notice_version",
+    }
     connection.close()

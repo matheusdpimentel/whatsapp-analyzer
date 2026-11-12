@@ -229,6 +229,22 @@ MIGRATIONS: tuple[str, ...] = (
 
     CREATE INDEX llm_attempts_by_request ON llm_attempts (provider, request_id, execution_status);
     """,
+    # 3: authorizations to send content to a real provider (milestone 6). One row per
+    # invocation that was allowed to send: when, how, to which destination, and which version
+    # of the privacy notice was shown. No message text, prompts or credentials.
+    """
+    CREATE TABLE llm_authorizations (
+        id INTEGER PRIMARY KEY,
+        run_id INTEGER NOT NULL REFERENCES llm_runs (id),
+        authorized_at TEXT NOT NULL,
+        method TEXT NOT NULL CHECK (method IN ('flag', 'interactive')),
+        provider TEXT NOT NULL,
+        model TEXT NOT NULL,
+        notice_version INTEGER NOT NULL
+    );
+
+    CREATE INDEX llm_authorizations_by_run ON llm_authorizations (run_id);
+    """,
 )
 
 LATEST_VERSION = len(MIGRATIONS)

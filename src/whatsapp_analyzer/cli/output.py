@@ -68,6 +68,8 @@ def error_body(error: AppError) -> dict[str, object]:
     }
     if error.hint is not None:
         body["hint"] = error.hint
+    if error.details is not None:
+        body["details"] = error.details
     return body
 
 

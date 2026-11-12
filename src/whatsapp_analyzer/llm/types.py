@@ -129,6 +129,11 @@ class ErrorKind(StrEnum):
     CONTEXT_TOO_LONG = "CONTEXT_TOO_LONG"
     INVALID_REQUEST = "INVALID_REQUEST"
     MALFORMED_PROVIDER_RESPONSE = "MALFORMED_PROVIDER_RESPONSE"  # unparseable API body
+    # An HTTP error from an endpoint whose refusals are not documented as "not processed"
+    # (OpenAI-compatible servers, gateways, official SDKs behind a custom base_url). A gateway
+    # can answer an error after the upstream model ran, so billing is unknown: never retried
+    # automatically, only re-sent with --resend-unknown.
+    ENDPOINT_ERROR = "ENDPOINT_ERROR"
     ADAPTER_ERROR = "ADAPTER_ERROR"  # unexpected exception inside an adapter (a bug)
 
 

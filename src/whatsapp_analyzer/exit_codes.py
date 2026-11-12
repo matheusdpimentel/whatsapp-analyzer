@@ -16,4 +16,5 @@ class ExitCode(IntEnum):
     ENVIRONMENT_CHECK_FAILED = 9
     CALIBRATION_REQUIRED = 10
     OUTPUT_ERROR = 11
+    AUTHORIZATION_REQUIRED = 12  # sending content to a provider needs explicit consent
     INTERRUPTED = 130

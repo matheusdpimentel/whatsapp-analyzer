@@ -6,13 +6,17 @@ The file has independent sections:
   reference date) produces a new metrics hash, and raw metrics are computed again.
 - `[scoring]` controls how raw metrics become normalized values, a score and a level. Changing
   it only re-scores the stored raw metrics.
-- `[llm]` selects the provider, model and prompt template, and `[llm.context]` limits what is
-  prepared for a model. It never affects deterministic metrics.
+- `[llm]` selects the provider, model, prompt template and generation parameters;
+  `[llm.connection]` says where requests go and which environment variable holds the API key
+  (never the key itself); `[llm.options]` holds provider-specific options; `[llm.context]`
+  limits what is prepared for a model and `[llm.limits]` bounds a run. None of it affects
+  deterministic metrics.
 
 Validation is strict: unknown keys, wrong types and out-of-range values are errors, never
 silently corrected. Missing keys take the documented defaults.
 """
 
+import re
 import tomllib
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime
@@ -88,7 +92,8 @@ class ScoringSettings:
         return asdict(self)
 
 
-SUPPORTED_PROVIDERS = ("fake",)  # real providers arrive in milestone 6
+ENV_NAME_PATTERN = re.compile(r"[A-Za-z_][A-Za-z0-9_]{0,127}")
+OptionValue = str | int | float | bool
 
 
 @dataclass(frozen=True)
@@ -113,10 +118,25 @@ class LimitSettings:
 
 
 @dataclass(frozen=True)
+class ConnectionSettings:
+    """Where requests go. `api_key_env` is the NAME of an environment variable; the key itself
+    is read from the environment when a run starts and is never stored anywhere."""
+
+    api_key_env: str | None = None  # None: the provider's documented default variable
+    base_url: str | None = None  # openai-compatible only (required there)
+    timeout_seconds: float = 120.0
+
+
+@dataclass(frozen=True)
 class LlmSettings:
     provider: str = "fake"
     model: str = "fake-classifier"
     prompt: str = "engagement-classification"  # template id, id@version or a .md path
+    max_output_tokens: int | None = None  # None: the prompt template's value
+    temperature: float | None = None  # None: not sent (the provider default)
+    connection: ConnectionSettings = field(default_factory=ConnectionSettings)
+    # Provider-specific options, sorted by name. Each adapter accepts a documented set.
+    options: tuple[tuple[str, OptionValue], ...] = ()
     context: ContextSettings = field(default_factory=ContextSettings)
     limits: LimitSettings = field(default_factory=LimitSettings)
 
@@ -166,10 +186,23 @@ high = 0.66
 medium = 0.33
 
 [llm]
-# Milestone 4 is offline: only the "fake" provider exists. See docs/llm.md.
+# "fake" is offline and free. Real providers: "openai", "anthropic", "openai-compatible"
+# (see docs/providers.md). Nothing is sent to a real provider without explicit authorization.
 provider = "fake"
 model = "fake-classifier"
 prompt = "engagement-classification"
+# max_output_tokens = 600   # default: the prompt template's value
+# temperature = 0.0         # only for models that accept it (see docs/providers.md)
+
+[llm.connection]
+# The NAME of the environment variable that holds your API key, never the key itself.
+# api_key_env = "ANTHROPIC_API_KEY"
+# base_url = "https://api.example.com/v1"   # required for openai-compatible, optional otherwise
+timeout_seconds = 120
+
+[llm.options]
+# Provider-specific options, e.g. effort = "low" (anthropic) or reasoning_effort = "low"
+# (openai). Unknown options are rejected.
 
 [llm.context]
 max_messages = 200
@@ -220,12 +253,25 @@ def parse_settings(data: dict[str, Any]) -> Settings:
 def _parse_llm(table: dict[str, Any]) -> LlmSettings:
     path = "llm."
     defaults = LlmSettings()
-    _reject_unknown(table, {"provider", "model", "prompt", "context", "limits"}, path)
+    _reject_unknown(
+        table,
+        {
+            "provider",
+            "model",
+            "prompt",
+            "max_output_tokens",
+            "temperature",
+            "connection",
+            "options",
+            "context",
+            "limits",
+        },
+        path,
+    )
     provider = table.get("provider", defaults.provider)
-    if provider not in SUPPORTED_PROVIDERS:
-        raise ConfigError(
-            "invalid_choice", key=f"{path}provider", choices=", ".join(SUPPORTED_PROVIDERS)
-        )
+    supported = supported_providers()
+    if provider not in supported:
+        raise ConfigError("invalid_choice", key=f"{path}provider", choices=", ".join(supported))
     for name in ("model", "prompt"):
         value = table.get(name, getattr(defaults, name))
         if not isinstance(value, str) or not value.strip():
@@ -234,10 +280,30 @@ def _parse_llm(table: dict[str, Any]) -> LlmSettings:
     context_path = f"{path}context."
     base = ContextSettings()
     _reject_unknown(context, set(asdict(base)), context_path)
+    max_output = None
+    if "max_output_tokens" in table:
+        max_output = _integer(table, "max_output_tokens", path, 0, 1, 1_000_000)
+    temperature = None
+    if "temperature" in table:
+        temperature = _number(table, "temperature", path, 0.0, 0.0, 2.0)
+    connection = _parse_connection(_table(table, "connection", path), f"{path}connection.")
+    options = _parse_options(_table(table, "options", path), f"{path}options.")
+    if provider == "fake":  # nothing to connect to: such settings are mistakes, never ignored
+        for key, value in (
+            ("connection.api_key_env", connection.api_key_env),
+            ("connection.base_url", connection.base_url),
+            ("options", options or None),
+        ):
+            if value is not None:
+                raise ConfigError("not_applicable", key=f"{path}{key}", provider=provider)
     return LlmSettings(
         provider=provider,
         model=table.get("model", defaults.model),
         prompt=table.get("prompt", defaults.prompt),
+        max_output_tokens=max_output,
+        temperature=temperature,
+        connection=connection,
+        options=options,
         context=ContextSettings(
             max_messages=_integer(
                 context, "max_messages", context_path, base.max_messages, 1, 5000
@@ -252,6 +318,45 @@ def _parse_llm(table: dict[str, Any]) -> LlmSettings:
         ),
         limits=_parse_limits(_table(table, "limits", path), f"{path}limits."),
     )
+
+
+def supported_providers() -> tuple[str, ...]:
+    """`fake` plus every provider in the registry (the single place where providers are
+    added). Imported here, not at module level: the registry imports this module."""
+    from whatsapp_analyzer.llm.providers import REGISTRY  # noqa: PLC0415
+
+    return ("fake", *REGISTRY)
+
+
+def _parse_connection(table: dict[str, Any], path: str) -> ConnectionSettings:
+    base = ConnectionSettings()
+    _reject_unknown(table, set(asdict(base)), path)
+    env_name = table.get("api_key_env")
+    if env_name is not None and (
+        not isinstance(env_name, str) or ENV_NAME_PATTERN.fullmatch(env_name) is None
+    ):
+        raise ConfigError("invalid_env_name", key=f"{path}api_key_env")
+    base_url = table.get("base_url")
+    if base_url is not None and (not isinstance(base_url, str) or not base_url.strip()):
+        raise ConfigError("wrong_type", key=f"{path}base_url", expected="string")
+    return ConnectionSettings(
+        api_key_env=env_name,
+        base_url=base_url,
+        timeout_seconds=_number(table, "timeout_seconds", path, base.timeout_seconds, 1, 3600),
+    )
+
+
+def _parse_options(table: dict[str, Any], path: str) -> tuple[tuple[str, OptionValue], ...]:
+    """Scalar values only. Which names are accepted depends on the provider and is checked
+    when a provider is built, so a typo is reported, never ignored."""
+    options: list[tuple[str, OptionValue]] = []
+    for name, value in sorted(table.items()):
+        if not isinstance(value, str | int | float | bool):
+            raise ConfigError(
+                "wrong_type", key=f"{path}{name}", expected="string, number or boolean"
+            )
+        options.append((name, value))
+    return tuple(options)
 
 
 def _parse_limits(table: dict[str, Any], path: str) -> LimitSettings:
