@@ -174,10 +174,22 @@ class LlmSettings:
 
 
 @dataclass(frozen=True)
+class CalibrationSettings:
+    """`[calibration]`: minimum numbers of human labels and the held-out share used by
+    `calibrate suggest`. They gate commands (exit code 10) and trigger sample-size warnings."""
+
+    min_labels_report: int = 30
+    min_labels_suggest: int = 50
+    small_sample_warning: int = 100
+    validation_fraction: float = 0.3
+
+
+@dataclass(frozen=True)
 class Settings:
     metrics: MetricsSettings = field(default_factory=MetricsSettings)
     scoring: ScoringSettings = field(default_factory=ScoringSettings)
     llm: LlmSettings = field(default_factory=LlmSettings)
+    calibration: CalibrationSettings = field(default_factory=CalibrationSettings)
 
 
 DEFAULT_CONFIG_TEXT = """\
@@ -264,6 +276,14 @@ mode = "single"
 # api_key_env = "ANTHROPIC_API_KEY"
 # [llm.review.limits]
 # max_cost = "1.00"
+
+[calibration]
+# Minimum human labels (HIGH, MEDIUM, LOW) before `calibrate` commands run (see
+# docs/calibration.md); below them the commands exit with code 10.
+min_labels_report = 30
+min_labels_suggest = 50
+small_sample_warning = 100
+validation_fraction = 0.3
 """
 
 
@@ -282,7 +302,7 @@ def load_settings(path: Path) -> Settings:
 
 
 def parse_settings(data: dict[str, Any]) -> Settings:
-    _reject_unknown(data, {"metrics", "scoring", "llm"}, "")
+    _reject_unknown(data, {"metrics", "scoring", "llm", "calibration"}, "")
     metrics = _parse_metrics(_table(data, "metrics", ""))
     scoring = _parse_scoring(_table(data, "scoring", ""))
     llm = _parse_llm(_table(data, "llm", ""))
@@ -292,7 +312,27 @@ def parse_settings(data: dict[str, Any]) -> Settings:
             key="scoring.target_active_weeks",
             limit_key="metrics.lookback_weeks",
         )
-    return Settings(metrics, scoring, llm)
+    return Settings(metrics, scoring, llm, _parse_calibration(_table(data, "calibration", "")))
+
+
+def _parse_calibration(table: dict[str, Any]) -> CalibrationSettings:
+    path = "calibration."
+    defaults = CalibrationSettings()
+    _reject_unknown(table, set(asdict(defaults)), path)
+    return CalibrationSettings(
+        min_labels_report=_integer(
+            table, "min_labels_report", path, defaults.min_labels_report, 1, 1_000_000
+        ),
+        min_labels_suggest=_integer(
+            table, "min_labels_suggest", path, defaults.min_labels_suggest, 1, 1_000_000
+        ),
+        small_sample_warning=_integer(
+            table, "small_sample_warning", path, defaults.small_sample_warning, 1, 1_000_000
+        ),
+        validation_fraction=_number(
+            table, "validation_fraction", path, defaults.validation_fraction, 0.1, 0.5
+        ),
+    )
 
 
 _LLM_KEYS = {

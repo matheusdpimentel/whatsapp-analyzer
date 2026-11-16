@@ -103,10 +103,18 @@ def migrate(connection: sqlite3.Connection) -> None:
 
 
 def _statements(script: str) -> Iterator[str]:
-    """Split a migration into statements (migrations contain no semicolons inside literals)."""
-    for statement in script.split(";"):
-        if statement.strip():
-            yield statement
+    """Split a migration into statements (migrations contain no semicolons inside literals).
+    A trigger body holds semicolons, so pieces are joined until SQLite sees a complete one."""
+    pending = ""
+    for piece in script.split(";"):
+        pending += piece
+        if not pending.strip():
+            pending = ""
+        elif sqlite3.complete_statement(pending + ";"):
+            yield pending
+            pending = ""
+        else:
+            pending += ";"
 
 
 @contextmanager

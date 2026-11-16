@@ -680,3 +680,117 @@ policy = "Unknown policy '{value}'. Choices: {choices}."
 
 [llm.review.render]
 header = "Review run {run_id} of primary run {primary_run}: the figures below are the reviewer's only."
+
+
+[calibrate]
+help = "Calibrate against human-reviewed examples: sample, label, report agreement, compare runs, find divergences. Offline; no provider is called."
+
+[calibrate.option]
+set = "Name of the calibration set."
+primary_run = "Primary run (default: the latest run of the configured provider and model)."
+review_run = "Review run linked to the primary run (default: its latest review)."
+
+[calibrate.sample]
+help = "Draw a reproducible sample of classified versions, store it as an immutable set and write a review sheet (ids only, no message text, no model labels)."
+written = "Set drawn: {size} of {population} classified versions. Sheet written to {path}."
+
+[calibrate.sample.option]
+size = "Number of versions to sample."
+strategy = "representative (random sample, figures generalize) or prioritized (divergences first, figures do not generalize)."
+seed = "Seed of the draw; the same seed and data give the same sample."
+
+[calibrate.sample.kind]
+representative = "Representative sample: agreement figures estimate the population, with their uncertainty."
+prioritized = "Prioritized sample: divergences first. Its figures describe these cases only, never general performance."
+
+[calibrate.sheet]
+help = "Write the review sheet of an existing set again (for example after a failed write). The set is not changed."
+written = "Sheet of set {set} ({size} items) written to {path}."
+
+[calibrate.import]
+help = "Import human labels from the filled review sheet. All or nothing; labels already stored cannot change."
+done = "Set {set}: {new} new labels, {unchanged} unchanged, {pending_in_file} still blank. {usable} usable labels of {items} items ({unclear} unclear)."
+
+[calibrate.import.option]
+labels = "The filled review sheet (CSV)."
+
+[calibrate.show]
+help = "Print the messages of one version of the set on the terminal so you can label it. Model labels and metrics are not shown. Nothing is written to a file."
+header = "{key} (version {version}, {data_version}): showing {shown} of {total} messages."
+
+[calibrate.show.option]
+version = "Version id from the sheet."
+key = "Conversation key from the sheet."
+offset = "Skip this many messages."
+limit = "Show at most this many messages."
+
+[calibrate.report]
+help = "Agreement of each model, the metric level and each consolidation policy with the human labels. Needs the minimum number of labels."
+written = "Report on {labeled} human labels written to {path}."
+rater = "{rater}: accuracy {accuracy}, weighted kappa {kappa}, compared {compared}, abstained {abstained}, absent {absent}."
+
+[calibrate.report.option]
+run = "Also evaluate this run (repeatable)."
+
+[calibrate.report.kind]
+representative = "Representative sample: accuracy has a 95% interval in the CSV."
+prioritized = "Prioritized sample: no interval is given; do not read these figures as general performance."
+
+[calibrate.disagreements]
+help = "List versions where models or the deterministic metric level diverge, widest gap first, to choose what people review next."
+set = "Also show the human label of versions that are in this set."
+written = "{n} diverging versions written to {path}."
+
+[calibrate.compare]
+help = "Compare two runs on the same conversations and versions of a set, against the human labels. Absent or incompatible items are counted, not dropped."
+summary = "Paired {paired} of {items} items."
+excluded = "Not paired ({reason}): {n}."
+run = "Run {id} ({model}, {prompt}): accuracy on paired items {accuracy}; recorded cost {cost}."
+
+[calibrate.compare.option]
+run = "A run to compare; pass --run twice."
+
+[calibrate.suggest]
+help = "Exploratory: which consolidation policy and score thresholds fit the human labels. Picks on a development part, re-measures on a held-out part, applies nothing."
+notice = "Exploratory suggestions, not results. Nothing was changed in the configuration."
+frontier = "Policies on the error/workload frontier in both parts: {policies}."
+thresholds = "Best thresholds on the development part: high {high}, medium {medium}. Improvement holds on the held-out part: {holds}."
+
+[calibrate.caveat]
+validation_few_comparable = "Too few comparable predictions in the held-out part to validate the pick."
+context_unverified = "Some items have no recorded context hash, so equal context cannot be proven; they were not paired."
+line = "Caveat: {text}"
+prioritized_sample_not_generalizable = "The sample is prioritized, so these figures are biased and not general performance."
+small_sample = "Few labels: figures are unstable; read the interval, not the point value."
+pending_labels = "Some items in the set are not labeled yet."
+superseded_versions = "Some versions are no longer the current version of their conversation."
+unclear_labels_excluded = "Items labeled UNCLEAR are excluded from agreement figures."
+partial_runs = "At least one run is not finished; results are partial."
+context_mismatch = "Some items were classified from different prepared contexts and were not paired."
+few_paired_items = "Few paired items: differences between the runs are not reliable."
+exploratory_suggestions = "Suggestions are exploratory: options were compared on labels that may also be few or biased."
+validation_too_small = "The held-out part is too small to validate the pick."
+
+[calibrate.hint]
+SHEET_PENDING = "The set '{set}' was created but its sheet was not written. Run: calibrate sheet --set {set} --out FILE (do not draw it again)."
+CALIBRATION_REQUIRED = "Label more items of the set (calibrate show, then calibrate import), or lower the minimum in [calibration]."
+
+[calibrate.error]
+CALIBRATION_SET_NOT_FOUND = "Calibration set '{set}' does not exist."
+INVALID_SET_NAME = "Invalid set name '{set}'. Use letters, digits, '.', '_' or '-' (at most 64 characters)."
+INVALID_STRATEGY = "Unknown strategy '{value}'. Choices: {choices}."
+INVALID_SIZE = "The sample size must be at least 1 (got {size})."
+SET_EXISTS = "Calibration set '{set}' already exists. Sets are immutable; choose another name."
+REVIEW_NOT_FOUND = "Review run {review_run} is not linked to the primary run."
+POPULATION_TOO_SMALL = "Cannot sample {size} versions: only {population} have a valid primary label."
+LABELS_UNREADABLE = "Cannot read the labels file {path} as UTF-8 text."
+LABELS_COLUMNS = "The labels file lacks the columns: {missing}."
+LABELS_INVALID = "{count} problem(s) in the labels file; nothing was imported. First: line {first_line}: {first_reason}."
+SHOW_TARGET = "Pass exactly one of --version or --key."
+ITEM_NOT_IN_SET = "That version is not in set '{set}'."
+AMBIGUOUS_KEY = "The key matches several versions ({versions}); pass --version."
+RUN_NOT_FOUND = "Run {run_id} does not exist."
+COMPARE_SAME_RUN = "Pass two different runs (got run {run_id} twice)."
+COMPARE_RUNS = "Pass --run exactly twice (got {n})."
+CALIBRATION_REQUIRED = "calibrate {command} needs at least {need} usable human labels; the set has {have}."
+CALIBRATION_REJECTED = "The calibration set rejected the change ({reason})."

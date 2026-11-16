@@ -195,7 +195,7 @@ def test_upgrade_from_schema_1_keeps_data(tmp_path: Path, monkeypatch: pytest.Mo
     connection.close()
     monkeypatch.setattr(db, "MIGRATIONS", migrations.MIGRATIONS)
     connection = connect(path)
-    assert schema_version(connection) == LATEST_VERSION == 4
+    assert schema_version(connection) == LATEST_VERSION == 5
     assert connection.execute("SELECT count(*) FROM metric_configs").fetchone()[0] == 1
     tables = {r[0] for r in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert {"llm_runs", "llm_jobs", "llm_attempts", "llm_authorizations", "llm_reviews"} <= tables
@@ -240,7 +240,7 @@ def test_upgrade_from_schema_3_adds_reviews(
     connection.close()
     monkeypatch.setattr(db, "MIGRATIONS", migrations.MIGRATIONS)
     connection = connect(path)
-    assert schema_version(connection) == 4
+    assert schema_version(connection) == LATEST_VERSION
     after = connection.execute("SELECT sql FROM sqlite_master ORDER BY name").fetchall()
     assert set(before) <= set(after)
     columns = {r[1] for r in connection.execute("PRAGMA table_info(llm_reviews)")}

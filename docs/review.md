@@ -117,5 +117,5 @@ cost of each run separately (`costs.primary`, `costs.reviewer`); they are never 
 both runs (id, provider, model, run key), the mode, criteria and policy, and whether a run
 was partial. No message text is exported.
 
-Weights with documented semantics and calibration against human-reviewed examples are
-milestone 8 ([roadmap.md](roadmap.md)).
+Calibration against human-reviewed examples (agreement of each policy with people) is in
+[calibration.md](calibration.md). No numeric weights exist: policies are categorical.

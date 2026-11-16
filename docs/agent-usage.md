@@ -261,6 +261,16 @@ the primary run finished, then `llm consolidate --out FILE`. The review is a run
 it asks for authorization for the REVIEWER's destination (exit 12, same flow as step 14) and
 has its own budget. Rows with `needs_human_review = true` are for the person to decide.
 
+## Optional: calibration
+
+To measure quality against people, use `calibrate` ([calibration.md](calibration.md)); it never
+calls a provider. `calibrate sample`, then the person labels the sheet (use `calibrate show` to
+read a version on the terminal; never paste its text anywhere else; `--json` omits text), then `calibrate import` and `calibrate
+report`. Exit code 10 means too few labels: tell the person how many (`error.details`), do not
+lower `[calibration]` minimums on your own. Report a prioritized sample's figures as "these
+cases only"; present `calibrate suggest` output as exploratory and never edit `analyzer.toml`
+because of it unless asked.
+
 ## 19. Export
 
 ```bash

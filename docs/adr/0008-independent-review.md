@@ -33,4 +33,4 @@ guarantees intact, no invented confidence and no arithmetic on categories.
 - A review costs a second set of requests, governed by its own budget and authorization.
 - The default primary lookup matches the `[llm]` provider and model; runs of a fake scenario or
   of another configuration are reviewed with `--primary-run`.
-- Weighted consolidation and calibration are left to milestone 8.
+- Calibration against human labels is milestone 8 ([ADR 0009](0009-calibration.md)); no weighted consolidation was added.

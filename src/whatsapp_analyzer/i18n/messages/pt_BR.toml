@@ -680,3 +680,117 @@ policy = "Política desconhecida '{value}'. Opções: {choices}."
 
 [llm.review.render]
 header = "Execução de revisão {run_id} da execução principal {primary_run}: os números abaixo são apenas do revisor."
+
+
+[calibrate]
+help = "Calibra contra exemplos revisados por pessoas: amostra, rotula, mede concordância, compara execuções e encontra divergências. Offline; nenhum provedor é chamado."
+
+[calibrate.option]
+set = "Nome do conjunto de calibração."
+primary_run = "Execução principal (padrão: a última do provedor e modelo configurados)."
+review_run = "Execução de revisão ligada à principal (padrão: a última revisão dela)."
+
+[calibrate.sample]
+help = "Sorteia uma amostra reproduzível de versões classificadas, grava como conjunto imutável e escreve a planilha de revisão (só ids, sem texto de mensagens nem rótulos dos modelos)."
+written = "Conjunto sorteado: {size} de {population} versões classificadas. Planilha escrita em {path}."
+
+[calibrate.sample.option]
+size = "Quantidade de versões na amostra."
+strategy = "representative (amostra aleatória, números generalizam) ou prioritized (divergências primeiro, números não generalizam)."
+seed = "Semente do sorteio; a mesma semente e os mesmos dados dão a mesma amostra."
+
+[calibrate.sample.kind]
+representative = "Amostra representativa: a concordância estima a população, com sua incerteza."
+prioritized = "Amostra priorizada: divergências primeiro. Os números descrevem só esses casos, nunca o desempenho geral."
+
+[calibrate.sheet]
+help = "Escreve de novo a planilha de revisão de um conjunto existente (por exemplo após falha de escrita). O conjunto não muda."
+written = "Planilha do conjunto {set} ({size} itens) escrita em {path}."
+
+[calibrate.import]
+help = "Importa os rótulos humanos da planilha preenchida. Tudo ou nada; rótulos já gravados não mudam."
+done = "Conjunto {set}: {new} rótulos novos, {unchanged} sem mudança, {pending_in_file} ainda em branco. {usable} rótulos utilizáveis de {items} itens ({unclear} incertos)."
+
+[calibrate.import.option]
+labels = "A planilha de revisão preenchida (CSV)."
+
+[calibrate.show]
+help = "Mostra no terminal as mensagens de uma versão do conjunto para você rotular. Rótulos dos modelos e métricas não aparecem. Nada é gravado em arquivo."
+header = "{key} (versão {version}, {data_version}): mostrando {shown} de {total} mensagens."
+
+[calibrate.show.option]
+version = "Id da versão, como na planilha."
+key = "Chave da conversa, como na planilha."
+offset = "Pula esta quantidade de mensagens."
+limit = "Mostra no máximo esta quantidade de mensagens."
+
+[calibrate.report]
+help = "Concordância de cada modelo, do nível das métricas e de cada política de consolidação com os rótulos humanos. Exige o mínimo de rótulos."
+written = "Relatório sobre {labeled} rótulos humanos escrito em {path}."
+rater = "{rater}: acurácia {accuracy}, kappa ponderado {kappa}, comparados {compared}, abstenções {abstained}, ausentes {absent}."
+
+[calibrate.report.option]
+run = "Avalia também esta execução (repetível)."
+
+[calibrate.report.kind]
+representative = "Amostra representativa: a acurácia tem intervalo de 95% no CSV."
+prioritized = "Amostra priorizada: sem intervalo; não leia estes números como desempenho geral."
+
+[calibrate.disagreements]
+help = "Lista versões em que modelos ou o nível das métricas divergem, da maior diferença para a menor, para escolher o que as pessoas revisam a seguir."
+set = "Mostra também o rótulo humano das versões que estão neste conjunto."
+written = "{n} versões divergentes escritas em {path}."
+
+[calibrate.compare]
+help = "Compara duas execuções nas mesmas conversas e versões de um conjunto, contra os rótulos humanos. Itens ausentes ou incompatíveis são contados, não descartados."
+summary = "Pareados {paired} de {items} itens."
+excluded = "Não pareados ({reason}): {n}."
+run = "Execução {id} ({model}, {prompt}): acurácia nos itens pareados {accuracy}; custo registrado {cost}."
+
+[calibrate.compare.option]
+run = "Uma execução a comparar; passe --run duas vezes."
+
+[calibrate.suggest]
+help = "Exploratório: qual política de consolidação e quais limiares de score combinam com os rótulos humanos. Escolhe numa parte de desenvolvimento, remede numa parte separada e não aplica nada."
+notice = "Sugestões exploratórias, não resultados. Nada foi alterado na configuração."
+frontier = "Políticas na fronteira erro/trabalho humano nas duas partes: {policies}."
+thresholds = "Melhores limiares na parte de desenvolvimento: alto {high}, médio {medium}. A melhora se mantém na parte separada: {holds}."
+
+[calibrate.caveat]
+validation_few_comparable = "Poucas previsões comparáveis na parte separada para validar a escolha."
+context_unverified = "Alguns itens não têm hash de contexto registrado, então contexto igual não pode ser provado; eles não foram pareados."
+line = "Ressalva: {text}"
+prioritized_sample_not_generalizable = "A amostra é priorizada; estes números são enviesados e não são desempenho geral."
+small_sample = "Poucos rótulos: os números são instáveis; leia o intervalo, não o valor pontual."
+pending_labels = "Alguns itens do conjunto ainda não foram rotulados."
+superseded_versions = "Algumas versões não são mais a versão atual da conversa."
+unclear_labels_excluded = "Itens rotulados UNCLEAR ficam fora dos números de concordância."
+partial_runs = "Pelo menos uma execução não terminou; os resultados são parciais."
+context_mismatch = "Alguns itens foram classificados com contextos preparados diferentes e não foram pareados."
+few_paired_items = "Poucos itens pareados: diferenças entre as execuções não são confiáveis."
+exploratory_suggestions = "As sugestões são exploratórias: as opções foram comparadas com rótulos que também podem ser poucos ou enviesados."
+validation_too_small = "A parte separada é pequena demais para validar a escolha."
+
+[calibrate.hint]
+SHEET_PENDING = "O conjunto '{set}' foi criado, mas a planilha não foi escrita. Rode: calibrate sheet --set {set} --out ARQUIVO (não sorteie de novo)."
+CALIBRATION_REQUIRED = "Rotule mais itens do conjunto (calibrate show, depois calibrate import) ou reduza o mínimo em [calibration]."
+
+[calibrate.error]
+CALIBRATION_SET_NOT_FOUND = "O conjunto de calibração '{set}' não existe."
+INVALID_SET_NAME = "Nome de conjunto inválido '{set}'. Use letras, dígitos, '.', '_' ou '-' (até 64 caracteres)."
+INVALID_STRATEGY = "Estratégia desconhecida '{value}'. Opções: {choices}."
+INVALID_SIZE = "O tamanho da amostra deve ser pelo menos 1 (recebido {size})."
+SET_EXISTS = "O conjunto '{set}' já existe. Conjuntos são imutáveis; escolha outro nome."
+REVIEW_NOT_FOUND = "A execução de revisão {review_run} não está ligada à execução principal."
+POPULATION_TOO_SMALL = "Não é possível sortear {size} versões: só {population} têm rótulo principal válido."
+LABELS_UNREADABLE = "Não foi possível ler o arquivo de rótulos {path} como texto UTF-8."
+LABELS_COLUMNS = "O arquivo de rótulos não tem as colunas: {missing}."
+LABELS_INVALID = "{count} problema(s) no arquivo de rótulos; nada foi importado. Primeiro: linha {first_line}: {first_reason}."
+SHOW_TARGET = "Passe exatamente um entre --version e --key."
+ITEM_NOT_IN_SET = "Essa versão não está no conjunto '{set}'."
+AMBIGUOUS_KEY = "A chave corresponde a várias versões ({versions}); passe --version."
+RUN_NOT_FOUND = "A execução {run_id} não existe."
+COMPARE_SAME_RUN = "Passe duas execuções diferentes (a execução {run_id} veio duas vezes)."
+COMPARE_RUNS = "Passe --run exatamente duas vezes (recebido {n})."
+CALIBRATION_REQUIRED = "calibrate {command} exige pelo menos {need} rótulos humanos utilizáveis; o conjunto tem {have}."
+CALIBRATION_REJECTED = "O conjunto de calibração rejeitou a alteração ({reason})."

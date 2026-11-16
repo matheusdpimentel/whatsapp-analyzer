@@ -9,7 +9,7 @@ import typer
 
 from whatsapp_analyzer import __version__
 from whatsapp_analyzer.cli.argv import command_name, split_global_options
-from whatsapp_analyzer.cli.commands import llm, llm_review, llm_run, metrics
+from whatsapp_analyzer.cli.commands import calibrate, llm, llm_review, llm_run, metrics
 from whatsapp_analyzer.cli.commands.demo_data import demo_data
 from whatsapp_analyzer.cli.commands.doctor import doctor
 from whatsapp_analyzer.cli.commands.export import export
@@ -94,6 +94,18 @@ def build_app() -> typer.Typer:
     llm_app.command("status", help=t("llm.status.help"))(llm_run.status)
     llm_app.command("export", help=t("llm.export.help"))(llm_run.export)
     app.add_typer(llm_app, name="llm")
+    calibrate_app = typer.Typer(help=t("calibrate.help"), no_args_is_help=True)
+    calibrate_app.command("sample", help=t("calibrate.sample.help"))(calibrate.sample)
+    calibrate_app.command("sheet", help=t("calibrate.sheet.help"))(calibrate.sheet)
+    calibrate_app.command("import", help=t("calibrate.import.help"))(calibrate.import_labels)
+    calibrate_app.command("show", help=t("calibrate.show.help"))(calibrate.show)
+    calibrate_app.command("report", help=t("calibrate.report.help"))(calibrate.report)
+    calibrate_app.command("disagreements", help=t("calibrate.disagreements.help"))(
+        calibrate.disagreements
+    )
+    calibrate_app.command("compare", help=t("calibrate.compare.help"))(calibrate.compare)
+    calibrate_app.command("suggest", help=t("calibrate.suggest.help"))(calibrate.suggest)
+    app.add_typer(calibrate_app, name="calibrate")
     app.command("status", help=t("status.help"))(status)
     app.command("export", help=t("export.help"))(export)
     return app

@@ -33,7 +33,7 @@ from whatsapp_analyzer.runner.model import RESUMABLE, RunStatus
 from whatsapp_analyzer.store.db import transaction, utc_now
 
 CONSOLIDATION_SCHEMA = 1
-_LABELED = ("succeeded", "reused")
+LABELED_STATUSES = ("succeeded", "reused")
 _ORDINAL = {"LOW", "MEDIUM", "HIGH"}  # labels comparable with deterministic metric levels
 
 
@@ -163,7 +163,9 @@ def select(
         reasons = []
         if ReviewCriterion.REVIEW_REQUIRED in criteria and label == "REVIEW_REQUIRED":
             reasons.append(ReviewCriterion.REVIEW_REQUIRED.value)
-        if ReviewCriterion.UNLABELED in criteria and (status not in _LABELED or label is None):
+        if ReviewCriterion.UNLABELED in criteria and (
+            status not in LABELED_STATUSES or label is None
+        ):
             reasons.append(ReviewCriterion.UNLABELED.value)
         level = levels.get(version_id)
         if (
@@ -414,8 +416,8 @@ def consolidate(
     }
     reviewed = sum(1 for row in rows if row[4] == "true")
     costs = {
-        "primary": _known_cost(connection, primary_id),
-        "reviewer": _known_cost(connection, review_id),
+        "primary": run_cost(connection, primary_id),
+        "reviewer": run_cost(connection, review_id),
     }
     summary: dict[str, object] = {
         "primary_run": _run_info(runs[primary_id]),
@@ -476,7 +478,7 @@ def _independent(primary: sqlite3.Row, reviewer: sqlite3.Row, primary_attempts: 
     )
 
 
-def _known_cost(connection: sqlite3.Connection, run_id: int) -> str | None:
+def run_cost(connection: sqlite3.Connection, run_id: int) -> str | None:
     """Recorded cost of a run's billed attempts; None if any of them has no known cost."""
     rows = connection.execute(
         "SELECT a.cost FROM llm_attempts a JOIN llm_jobs j ON j.id = a.job_id "
@@ -489,7 +491,7 @@ def _known_cost(connection: sqlite3.Connection, run_id: int) -> str | None:
 
 
 def _label(job: sqlite3.Row | None) -> str | None:
-    if job is None or job["status"] not in _LABELED:
+    if job is None or job["status"] not in LABELED_STATUSES:
         return None
     label: str | None = job["label"]
     return label

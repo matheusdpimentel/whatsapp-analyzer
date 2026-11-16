@@ -270,6 +270,81 @@ MIGRATIONS: tuple[str, ...] = (
 
     CREATE INDEX llm_reviews_by_primary ON llm_reviews (primary_run_id, mode, selection_key);
     """,
+    # 5: calibration against human-reviewed examples (milestone 8). A set fixes which versions
+    # are to be labeled and how they were drawn; its items and human labels are immutable
+    # (triggers refuse updates and deletes). No message text, notes or reviewer identity.
+    """
+    CREATE TABLE calibration_sets (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        sampling TEXT NOT NULL CHECK (sampling IN ('representative', 'prioritized')),
+        seed INTEGER NOT NULL,
+        primary_run_id INTEGER NOT NULL REFERENCES llm_runs (id),
+        review_run_id INTEGER REFERENCES llm_runs (id),
+        scoring_run_id INTEGER REFERENCES scoring_runs (id),
+        population INTEGER NOT NULL,
+        size INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        tool_version TEXT NOT NULL
+    );
+
+    CREATE TABLE calibration_items (
+        set_id INTEGER NOT NULL REFERENCES calibration_sets (id),
+        version_id INTEGER NOT NULL REFERENCES conversation_versions (id),
+        stratum TEXT NOT NULL,
+        PRIMARY KEY (set_id, version_id)
+    ) WITHOUT ROWID;
+
+    CREATE TABLE calibration_labels (
+        set_id INTEGER NOT NULL,
+        version_id INTEGER NOT NULL,
+        label TEXT NOT NULL CHECK (label IN ('HIGH', 'MEDIUM', 'LOW', 'UNCLEAR')),
+        labels_sha256 TEXT NOT NULL,
+        imported_at TEXT NOT NULL,
+        PRIMARY KEY (set_id, version_id),
+        FOREIGN KEY (set_id, version_id) REFERENCES calibration_items (set_id, version_id)
+    ) WITHOUT ROWID;
+
+    CREATE TRIGGER calibration_sets_immutable BEFORE UPDATE ON calibration_sets
+    BEGIN SELECT RAISE(ABORT, 'calibration sets are immutable'); END;
+
+    CREATE TRIGGER calibration_sets_no_delete BEFORE DELETE ON calibration_sets
+    BEGIN SELECT RAISE(ABORT, 'calibration sets are immutable'); END;
+
+    -- BEFORE INSERT triggers also stop INSERT OR REPLACE, which deletes the old row without
+    -- firing delete triggers.
+    CREATE TRIGGER calibration_sets_no_replace BEFORE INSERT ON calibration_sets
+    WHEN EXISTS (SELECT 1 FROM calibration_sets WHERE id = NEW.id OR name = NEW.name)
+    BEGIN SELECT RAISE(ABORT, 'calibration sets are immutable'); END;
+
+    CREATE TRIGGER calibration_items_no_replace BEFORE INSERT ON calibration_items
+    WHEN EXISTS (SELECT 1 FROM calibration_items
+                 WHERE set_id = NEW.set_id AND version_id = NEW.version_id)
+    BEGIN SELECT RAISE(ABORT, 'calibration items are immutable'); END;
+
+    -- a set holds exactly `size` items: once complete, no item can be added
+    CREATE TRIGGER calibration_items_closed BEFORE INSERT ON calibration_items
+    WHEN (SELECT count(*) FROM calibration_items WHERE set_id = NEW.set_id)
+         >= coalesce((SELECT size FROM calibration_sets WHERE id = NEW.set_id), 0)
+    BEGIN SELECT RAISE(ABORT, 'calibration set is complete'); END;
+
+    CREATE TRIGGER calibration_labels_no_replace BEFORE INSERT ON calibration_labels
+    WHEN EXISTS (SELECT 1 FROM calibration_labels
+                 WHERE set_id = NEW.set_id AND version_id = NEW.version_id)
+    BEGIN SELECT RAISE(ABORT, 'calibration labels are immutable'); END;
+
+    CREATE TRIGGER calibration_items_immutable BEFORE UPDATE ON calibration_items
+    BEGIN SELECT RAISE(ABORT, 'calibration items are immutable'); END;
+
+    CREATE TRIGGER calibration_items_no_delete BEFORE DELETE ON calibration_items
+    BEGIN SELECT RAISE(ABORT, 'calibration items are immutable'); END;
+
+    CREATE TRIGGER calibration_labels_immutable BEFORE UPDATE ON calibration_labels
+    BEGIN SELECT RAISE(ABORT, 'calibration labels are immutable'); END;
+
+    CREATE TRIGGER calibration_labels_no_delete BEFORE DELETE ON calibration_labels
+    BEGIN SELECT RAISE(ABORT, 'calibration labels are immutable'); END;
+    """,
 )
 
 LATEST_VERSION = len(MIGRATIONS)

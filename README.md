@@ -137,7 +137,23 @@ whatsapp-analyzer llm review -w ./analysis --authorize-send anthropic   # [llm.r
 whatsapp-analyzer llm consolidate -w ./analysis --out consolidated.csv
 ```
 
-See [`docs/review.md`](docs/review.md). A future, optional *Knowledge Builder* (structured,
+See [`docs/review.md`](docs/review.md).
+
+### Calibration with human-reviewed examples
+
+Measure how far models, the metric level and the consolidation policies agree with people,
+find divergences and compare runs, entirely offline (no provider is called):
+
+```bash
+whatsapp-analyzer calibrate sample -w ./analysis --set week1 --size 60 --out week1.csv
+whatsapp-analyzer calibrate show   -w ./analysis --set week1 --version 123   # read locally, then label
+whatsapp-analyzer calibrate import -w ./analysis --set week1 --labels week1_filled.csv
+whatsapp-analyzer calibrate report -w ./analysis --set week1 --out report.csv
+```
+
+Representative and prioritized samples are kept apart, and `calibrate suggest` is exploratory
+(it validates on held-out labels and applies nothing). See
+[`docs/calibration.md`](docs/calibration.md). A future, optional *Knowledge Builder* (structured,
 source-cited knowledge for agents, with human review and privacy controls) is proposed in
 [`docs/roadmap.md`](docs/roadmap.md); it is not implemented.
 
@@ -180,13 +196,13 @@ Failures add an `error` object with a stable English `code`, a localized `messag
 | 7 | Budget limit reached |
 | 8 | Run finished with failed items or items awaiting reconciliation |
 | 9 | Environment check failed |
-| 10 | Calibration required before a full LLM run |
+| 10 | Calibration required: too few human labels for the command (`calibrate`) |
 | 11 | Output could not be written (permissions, invalid path, full disk) |
 | 12 | Sending content to a provider needs explicit authorization (`--authorize-send`) |
 | 130 | Interrupted by the user (an interrupted `metrics run` resumes when run again) |
 
 Codes 5 to 8 and 12 are used by `llm run` (see [`docs/runner.md`](docs/runner.md) and
-[`docs/providers.md`](docs/providers.md)); code 10 is reserved for a later milestone. Code 4
+[`docs/providers.md`](docs/providers.md)); code 10 is used by `calibrate` (see [`docs/calibration.md`](docs/calibration.md)). Code 4
 covers invalid `analyzer.toml` files, missing or incompatible workspaces and provider
 configuration errors (missing key, unsupported option, invalid endpoint, ...).
 

@@ -81,16 +81,22 @@ def score_conversation(raw: RawMetrics, settings: ScoringSettings) -> Score:
         )
 
     value = round(sum(weights[name] * x for name, x in present.items()) / covered, SCORE_DIGITS)
-    if value >= settings.high_threshold:
-        if raw.inbound_content_messages >= settings.high_min_inbound_content_messages:
-            level, reason = Level.HIGH, Reason.SCORED
-        else:
-            level, reason = Level.MEDIUM, Reason.HIGH_GATE
-    elif value >= settings.medium_threshold:
-        level, reason = Level.MEDIUM, Reason.SCORED
-    else:
-        level, reason = Level.LOW, Reason.SCORED
+    level, reason = classify(value, raw.inbound_content_messages, settings)
     return Score(**components, coverage=coverage, score=value, level=level, reason=reason)
+
+
+def classify(
+    value: float, inbound_content_messages: int, settings: ScoringSettings
+) -> tuple[Level, Reason]:
+    """HIGH, MEDIUM or LOW for a stored score. Shared with calibration, which re-applies other
+    thresholds to stored scores without recomputing anything."""
+    if value >= settings.high_threshold:
+        if inbound_content_messages >= settings.high_min_inbound_content_messages:
+            return Level.HIGH, Reason.SCORED
+        return Level.MEDIUM, Reason.HIGH_GATE
+    if value >= settings.medium_threshold:
+        return Level.MEDIUM, Reason.SCORED
+    return Level.LOW, Reason.SCORED
 
 
 def normalize(raw: RawMetrics, settings: ScoringSettings) -> dict[str, float | None]:

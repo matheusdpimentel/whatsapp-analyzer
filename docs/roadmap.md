@@ -10,13 +10,13 @@
 | M5 | Persistent runner: budgets, rate limits, deduplication, checkpoints, reconciliation | done |
 | M6 | Real providers (OpenAI, Anthropic, OpenAI-compatible), BYOK, authorization, agent guide | done |
 | M7 | Independent review (single, selective, dual) and categorical consolidation ([review.md](review.md)) | done |
-| M8 | Calibration with human-reviewed examples | planned |
+| M8 | Calibration with human-reviewed examples ([calibration.md](calibration.md)) | done |
 | Future | Knowledge Builder (proposal below, not implemented) | proposed |
 
 ## M7: configurable reviewers
 
 Implemented in milestone 7 as specified below; see [review.md](review.md) and ADR 0008.
-Weighted consolidation is left to M8.
+Weighted consolidation was not added in M8: calibration evaluates the existing policies.
 
 ### Modes
 
@@ -64,9 +64,11 @@ Rules for consolidation:
 
 ## M8: calibration
 
-Human-reviewed examples to measure agreement, calibrate thresholds and consolidation weights,
-and report where models and metrics disagree. Exit code 10 (`CALIBRATION_REQUIRED`) is
-reserved for it.
+Implemented in milestone 8; see [calibration.md](calibration.md) and ADR 0009. Human-reviewed
+examples measure agreement, compare runs and report where models and metrics disagree;
+`suggest` explores policies and score thresholds with a held-out part. No numeric weights were
+added: the four policies are evaluated as they are. Exit code 10 (`CALIBRATION_REQUIRED`)
+means too few human labels.
 
 ## Proposal: Knowledge Builder (not implemented)
 
