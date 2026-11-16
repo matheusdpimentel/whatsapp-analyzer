@@ -4,11 +4,11 @@ A local, terminal-based tool for processing, analyzing and classifying WhatsApp 
 exports. It computes deterministic engagement metrics and can optionally classify conversations
 with an LLM provider that you configure.
 
-> **Status: early development (milestone 6).** Conversations can be imported, validated and
+> **Status: early development (milestone 7).** Conversations can be imported, validated and
 > stored in a local workspace; deterministic engagement metrics can be computed, compared and
 > exported; and LLM classification runs as a persistent, resumable, budgeted job with the
 > offline fake provider or a real provider (OpenAI, Anthropic or an OpenAI-compatible
-> endpoint) using your own key. See [`docs/roadmap.md`](docs/roadmap.md); architecture
+> endpoint) using your own key, optionally reviewed by a second model. See [`docs/roadmap.md`](docs/roadmap.md); architecture
 > decisions are recorded in [`docs/adr/`](docs/adr/).
 
 The tool is free and open source. There is no backend, account or subscription: with a real
@@ -125,6 +125,21 @@ for it with `--show-content` or `--out` and confirm. See
 [`docs/providers.md`](docs/providers.md) (configuration, models, endpoints, costs),
 [`docs/llm.md`](docs/llm.md) and
 [`docs/adding-a-provider.md`](docs/adding-a-provider.md) to support another provider.
+
+### Independent review
+
+A second model can review the primary classifications, for selected cases or for every
+conversation, without seeing the primary answer; a policy then consolidates both without
+averaging categories:
+
+```bash
+whatsapp-analyzer llm review -w ./analysis --authorize-send anthropic   # [llm.review] in analyzer.toml
+whatsapp-analyzer llm consolidate -w ./analysis --out consolidated.csv
+```
+
+See [`docs/review.md`](docs/review.md). A future, optional *Knowledge Builder* (structured,
+source-cited knowledge for agents, with human review and privacy controls) is proposed in
+[`docs/roadmap.md`](docs/roadmap.md); it is not implemented.
 
 ### Synthetic demo data
 

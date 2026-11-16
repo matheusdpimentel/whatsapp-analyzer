@@ -10,6 +10,7 @@ conversations with an LLM provider the user configures with their own key.
 - [docs/agent-usage.md](docs/agent-usage.md): how to operate the CLI step by step as an agent.
 - [docs/providers.md](docs/providers.md): providers, keys, models, endpoints, costs, errors.
 - [docs/adding-a-provider.md](docs/adding-a-provider.md): writing a new adapter.
+- [docs/review.md](docs/review.md): independent review by a second model and consolidation.
 - [docs/runner.md](docs/runner.md), [docs/llm.md](docs/llm.md), [docs/metrics.md](docs/metrics.md),
   [docs/input-formats.md](docs/input-formats.md), [docs/roadmap.md](docs/roadmap.md),
   [docs/adr/](docs/adr/).

@@ -245,6 +245,31 @@ MIGRATIONS: tuple[str, ...] = (
 
     CREATE INDEX llm_authorizations_by_run ON llm_authorizations (run_id);
     """,
+    # 4: independent reviews (milestone 7). A review run is an ordinary run (migration 2);
+    # this table only records which primary run it reviews, how its scope was selected and
+    # with which consolidation policy. One row per selection (mode, criteria, explicit keys):
+    # two selections that pick the same versions share a review run but keep their own row.
+    # `used_seq` grows each time a selection is reviewed (planned or resumed), so "the latest
+    # review" is the one used last. Results are never copied or overwritten.
+    """
+    CREATE TABLE llm_reviews (
+        id INTEGER PRIMARY KEY,
+        primary_run_id INTEGER NOT NULL REFERENCES llm_runs (id),
+        review_run_id INTEGER NOT NULL REFERENCES llm_runs (id),
+        mode TEXT NOT NULL CHECK (mode IN ('selective', 'dual')),
+        selection_key TEXT NOT NULL,
+        criteria_json TEXT NOT NULL,
+        policy TEXT NOT NULL,
+        selected INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        used_seq INTEGER NOT NULL,
+        UNIQUE (primary_run_id, review_run_id, mode, selection_key),
+        UNIQUE (used_seq),
+        CHECK (primary_run_id != review_run_id)
+    );
+
+    CREATE INDEX llm_reviews_by_primary ON llm_reviews (primary_run_id, mode, selection_key);
+    """,
 )
 
 LATEST_VERSION = len(MIGRATIONS)

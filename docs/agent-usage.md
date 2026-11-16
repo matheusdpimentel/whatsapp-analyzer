@@ -254,6 +254,13 @@ attempt is kept in the workspace's `llm_attempts` table); tell the person before
 `--resend-unknown`. Details in
 [runner.md](runner.md).
 
+## Optional: independent review
+
+If the person configured `[llm.review]` ([review.md](review.md)), run `llm review` after
+the primary run finished, then `llm consolidate --out FILE`. The review is a run of its own:
+it asks for authorization for the REVIEWER's destination (exit 12, same flow as step 14) and
+has its own budget. Rows with `needs_human_review = true` are for the person to decide.
+
 ## 19. Export
 
 ```bash

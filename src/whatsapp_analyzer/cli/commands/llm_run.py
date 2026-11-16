@@ -18,11 +18,11 @@ import sqlite3
 import sys
 from collections.abc import Callable
 from contextlib import ExitStack
-from dataclasses import replace
+from dataclasses import dataclass, field, replace
 from datetime import date
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Annotated, Any, TextIO
+from typing import Annotated, Any, NoReturn, TextIO
 
 import typer
 from rich.progress import Progress, TaskID
@@ -141,30 +141,86 @@ def run(
     state: CliState = ctx.obj
     target = resolve_workspace(workspace)
     settings = load_settings(target, config)
-    overrides = _overrides(concurrency, rpm, tpm, max_tokens, max_cost, max_attempts)
-    limits = replace(settings.llm.limits, **overrides)
-    run_config = _run_config(target, settings, prompt, limits)
+    args = RunArgs(
+        prompt=prompt,
+        keys=tuple(conversation) if conversation else None,
+        run_id=run_id,
+        force=force,
+        reuse=reuse,
+        retry_failed=retry_failed,
+        resend_unknown=resend_unknown,
+        overrides=_overrides(concurrency, rpm, tpm, max_tokens, max_cost, max_attempts),
+        fake_scenario=fake_scenario,
+        events=events,
+        authorize_send=authorize_send,
+    )
+    run_configured(state, target, settings, args, "llm run")
+
+
+@dataclass(frozen=True)
+class RunArgs:
+    """Everything `llm run` (and `llm review`, for the reviewer) needs besides the settings."""
+
+    prompt: str | None = None
+    keys: tuple[str, ...] | None = None
+    versions: tuple[int, ...] | None = None  # a fixed scope (a review of another run)
+    run_id: int | None = None
+    force: bool = False
+    reuse: bool = True
+    retry_failed: bool = False
+    resend_unknown: bool = False
+    overrides: dict[str, Any] = field(default_factory=dict)
+    fake_scenario: str | None = None
+    events: str | None = None
+    authorize_send: str | None = None
+
+
+def prepare_run(
+    target: Workspace, settings: Settings, args: RunArgs
+) -> tuple[RunConfig, Provider, BuiltProvider | None]:
+    """The run configuration and provider for `settings.llm`, checked before anything is
+    planned (a real provider is validated completely; `--authorize-send` must match)."""
+    limits = replace(settings.llm.limits, **args.overrides)
+    run_config = _run_config(target, settings, args.prompt, limits)
     built: BuiltProvider | None = None
     provider: Provider
     if is_external(settings.llm.provider):
-        if fake_scenario is not None:
+        if args.fake_scenario is not None:
             raise AppError(
                 "INCOMPATIBLE_OPTIONS", ExitCode.USAGE_ERROR, t("llm.run.error.fake_scenario_real")
             )
         built, run_config = _real_provider(target, settings, run_config)
         provider = built.provider
     else:
-        provider = _provider(fake_scenario)
+        provider = _provider(args.fake_scenario)
         run_config = replace(run_config, provider=provider.name)
-    consent.check_flag(authorize_send, run_config.provider)  # before anything is planned
+    consent.check_flag(args.authorize_send, run_config.provider)  # before anything is planned
+    return run_config, provider, built
+
+
+def run_configured(
+    state: CliState,
+    target: Workspace,
+    settings: Settings,
+    args: RunArgs,
+    command: str,
+    prepared: tuple[RunConfig, Provider, BuiltProvider | None] | None = None,
+    on_opened: Callable[[sqlite3.Connection, OpenedRun], dict[str, object]] | None = None,
+) -> NoReturn:
+    """Plan or resume, authorize, execute and report one run; exits with the run's code.
+    `on_opened` runs under the writer lock once the run exists and this invocation is
+    authorized (before it executes); it may add fields to the output."""
+    run_config, provider, built = prepared or prepare_run(target, settings, args)
     request = OpenRequest(
-        keys=tuple(conversation) if conversation else None,
-        run_id=run_id,
-        force=force,
-        retry_failed=retry_failed,
-        resend_unknown=resend_unknown,
-        limit_overrides=tuple(overrides.items()),
+        keys=args.keys,
+        versions=args.versions,
+        run_id=args.run_id,
+        force=args.force,
+        retry_failed=args.retry_failed,
+        resend_unknown=args.resend_unknown,
+        limit_overrides=tuple(args.overrides.items()),
     )
+    extra: dict[str, object] = {}
     with ExitStack() as stack:
         stack.enter_context(writer_lock(target))
         connection = open_database(target)
@@ -173,22 +229,24 @@ def run(
         # authorized: a refused authorization must not leave them pending for the next one.
         opened = _open(connection, run_config, request, defer_requeue=built is not None)
         notices = _notices(built, opened.config)  # a resumed run keeps its price snapshot
-        sink = _event_sink(stack, events)
-        quiet = events == "-"  # events on stderr: no progress bar to interleave with
+        sink = _event_sink(stack, args.events)
+        quiet = args.events == "-"  # events on stderr: no progress bar to interleave with
         status = RunStatus(
             connection.execute(
                 "SELECT status FROM llm_runs WHERE id = ?", (opened.run_id,)
             ).fetchone()[0]
         )
         authorization = _authorize(
-            state, connection, opened, built, authorize_send, notices, request
+            state, connection, opened, built, args.authorize_send, notices, request
         )
         if built is not None and authorization is not None:
-            opened = apply_requeue(connection, opened, retry_failed, resend_unknown)
+            opened = apply_requeue(connection, opened, args.retry_failed, args.resend_unknown)
+        if on_opened is not None:  # only once the run may execute (authorized if needed)
+            extra = on_opened(connection, opened)
         if opened.mode in {"new", "resumed"}:
             progress = None if quiet else _progress(stack, state, connection, opened.run_id)
             options = EngineOptions(
-                reuse=reuse,
+                reuse=args.reuse,
                 resend_job_ids=opened.resend_job_ids,
                 events=sink,
                 progress=progress,
@@ -208,11 +266,12 @@ def run(
         "destination": run_config.provider,
         "authorization": authorization,
         "notices": notices,
+        **extra,
         **report,
     }
     failure = _failure(status, report)
     if state.json_output:
-        write_json(result_payload("llm run", data, failure))
+        write_json(result_payload(command, data, failure))
     else:
         _render(data)
         for notice in notices:
@@ -642,6 +701,13 @@ def _render(data: dict[str, object]) -> None:
     assert isinstance(cost, dict) and isinstance(usage, dict)
     if "mode" in data:
         console.print(t(f"llm.run.mode.{data['mode']}", run_id=run_info["id"]), highlight=False)
+    review = data.get("review")
+    if isinstance(review, dict):  # a review run: its figures are the reviewer's only
+        console.print(
+            t("llm.review.render.header", run_id=run_info["id"], primary_run=review["primary_run"]),
+            highlight=False,
+            markup=False,
+        )
     table = Table(
         title=t("llm.status.title", run_id=run_info["id"]), title_justify="left", show_header=False
     )
@@ -664,7 +730,10 @@ def _render(data: dict[str, object]) -> None:
     known_cost = "-" if cost["known_total"] is None else f"{cost['known_total']} {cost['currency']}"
     if cost["billed_attempts_without_cost"]:
         known_cost += " " + t("llm.status.partial_cost", count=cost["billed_attempts_without_cost"])
-    table.add_row(t("llm.status.row.cost"), known_cost)
+    cost_label = (
+        "llm.status.row.cost_reviewer" if isinstance(review, dict) else "llm.status.row.cost"
+    )
+    table.add_row(t(cost_label), known_cost)
     reservations, budget = data["reservations"], data["budget"]
     assert isinstance(reservations, dict) and isinstance(budget, dict)
     table.add_row(t("llm.status.row.in_flight"), f"{reservations['in_flight_tokens']:,}")

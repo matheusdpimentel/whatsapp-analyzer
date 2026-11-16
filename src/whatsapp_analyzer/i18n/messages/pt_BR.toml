@@ -546,6 +546,7 @@ note = "As reservas usam estimativas locais de tokens: um guia conservador, não
 run = "ID do run. Padrão: o run usado mais recentemente."
 
 [llm.status.row]
+cost_reviewer = "Custo conhecido (revisor, somente esta execução)"
 status = "Status"
 tokens_reported = "Tokens informados pelo provedor (entrada / saída)"
 tokens_estimated = "Tokens estimados localmente (entrada / saída)"
@@ -638,3 +639,44 @@ STRUCTURED_OUTPUT_UNDECLARED = "O suporte do modelo a saída estruturada não fo
 CONTEXT_WINDOW_UNKNOWN = "A janela de contexto do modelo é desconhecida; os prompts não são verificados contra ela."
 PRICE_MISSING = "Não há preço configurado para este modelo: os custos são desconhecidos e --max-cost não pode ser usado. Adicione-o em <workspace>/pricing.toml."
 PRICE_STALE = "O preço deste modelo tem mais de 90 dias e pode estar desatualizado. Confira a página de preços do provedor e atualize <workspace>/pricing.toml."
+
+[llm.review]
+help = "Executa o revisor independente de [llm.review] sobre uma execução principal concluída: todas as conversas (dual) ou as selecionadas por critérios explícitos (selective). O revisor nunca vê a classificação principal. Provedores reais exigem --authorize-send para o destino do revisor."
+nothing = "Nada a revisar na execução {run_id}: nenhuma conversa atende aos critérios de revisão."
+
+[llm.review.option]
+reselect = "Seleciona as conversas de novo em vez de reaproveitar o escopo da revisão anterior desta execução principal (níveis de métricas ou reconciliações podem ter mudado)."
+primary_run = "A execução principal concluída a revisar (padrão: a mais recente do provedor e modelo de [llm])."
+conversation = "Também revisa esta chave de conversa (modo selective). Pode ser repetida."
+authorize_send = "Autoriza o envio do conteúdo preparado ao destino do REVISOR (exatamente sua identidade configurada). Necessário em toda revisão que possa enviar."
+
+[llm.review.error]
+PRIMARY_IS_A_REVIEW = "A execução {run_id} é uma execução de revisão: revise uma execução principal."
+context_mismatch = "O [llm.context] ou os ignored_texts de [metrics] atuais diferem dos usados pela execução principal {run_id}: o revisor veria outras conversas."
+conversation_dual = "--conversation seleciona casos no modo selective; uma revisão dual cobre todas as conversas da execução principal."
+disabled = "Nenhuma revisão configurada: o mode de [llm.review] é \"single\" ou não há revisor."
+same_as_primary = "O revisor usa o mesmo provedor e modelo da execução principal: não seria uma análise independente."
+PRIMARY_RUN_NOT_FOUND = "Nenhuma execução principal concluída encontrada (execução {run_id}). Rode 'llm run' antes."
+PRIMARY_RUN_UNFINISHED = "A execução {run_id} está {status}: conclua-a antes de revisar, para que a seleção não mude."
+REVIEW_NOT_FOUND = "Nenhuma revisão encontrada (execução principal {primary_run}, execução de revisão {review_run}). Rode 'llm review' antes."
+
+[llm.review.hint]
+context_mismatch = "Restaure as configurações usadas pela execução principal, ou rode o modelo principal de novo com as atuais."
+disabled = "Defina mode = \"selective\" ou \"dual\" e o provedor e o modelo do revisor em [llm.review] (docs/review.md)."
+same_as_primary = "Use outro modelo (ou provedor) para o revisor em [llm.review]."
+
+[llm.consolidate]
+costs = "Custo registrado: execução principal {primary_run}: {primary}; execução do revisor {review_run}: {reviewer} (- significa desconhecido)."
+help = "Compara uma execução principal com sua revisão por conversa e grava um CSV com o rótulo consolidado segundo uma política. Rótulos nunca são promediados; as duas execuções ficam inalteradas."
+written = "{rows} linhas gravadas ({reviewed} revisadas, {human} precisam de revisão humana) em {path}."
+
+[llm.consolidate.option]
+primary_run = "Consolida a revisão mais recente desta execução principal."
+review_run = "Consolida esta execução de revisão."
+policy = "require_agreement, prefer_primary, prefer_reviewer ou human_review (padrão: a policy de [llm.review])."
+
+[llm.consolidate.error]
+policy = "Política desconhecida '{value}'. Opções: {choices}."
+
+[llm.review.render]
+header = "Execução de revisão {run_id} da execução principal {primary_run}: os números abaixo são apenas do revisor."

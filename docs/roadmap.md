@@ -9,13 +9,14 @@
 | M4 | Offline LLM core: Provider Protocol, fake provider, prompts, masking, estimates | done |
 | M5 | Persistent runner: budgets, rate limits, deduplication, checkpoints, reconciliation | done |
 | M6 | Real providers (OpenAI, Anthropic, OpenAI-compatible), BYOK, authorization, agent guide | done |
-| M7 | Configurable reviewers (defined below, not implemented) | planned |
+| M7 | Independent review (single, selective, dual) and categorical consolidation ([review.md](review.md)) | done |
 | M8 | Calibration with human-reviewed examples | planned |
+| Future | Knowledge Builder (proposal below, not implemented) | proposed |
 
-## M7: configurable reviewers (definition only)
+## M7: configurable reviewers
 
-Nothing of this exists yet: no tables, commands, contracts or runner changes. This section
-records the decisions so that M7 starts from them.
+Implemented in milestone 7 as specified below; see [review.md](review.md) and ADR 0008.
+Weighted consolidation is left to M8.
 
 ### Modes
 
@@ -66,3 +67,19 @@ Rules for consolidation:
 Human-reviewed examples to measure agreement, calibrate thresholds and consolidation weights,
 and report where models and metrics disagree. Exit code 10 (`CALIBRATION_REQUIRED`) is
 reserved for it.
+
+## Proposal: Knowledge Builder (not implemented)
+
+An optional, later module that turns conversation histories into structured knowledge for
+AI agents: facts, preferences and communication profiles (tone, preferred channels and
+times, recurring topics), each item with traceable sources (conversation, version and
+message ids), never free text detached from its evidence.
+
+Principles, to be designed before any code:
+
+- Opt-in per workspace, with the same per-invocation authorization as any provider call.
+- Every extracted item cites its sources and carries a review status; nothing is used by an
+  agent until a person accepts it (human review first).
+- Privacy controls: masking, exclusion lists, retention limits, export and deletion of every
+  item about a person; no sensitive or protected attributes inferred.
+- Built on the existing runner, budgets and consolidation; no new hosting or backend.

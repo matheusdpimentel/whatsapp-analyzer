@@ -129,6 +129,19 @@ def select_versions(connection: sqlite3.Connection, keys: Sequence[str] | None) 
     ]
 
 
+def select_version_ids(
+    connection: sqlite3.Connection, version_ids: Sequence[int]
+) -> list[Selected]:
+    """Exactly these (immutable) versions, current or not: a review covers the versions the
+    primary run classified, even if a conversation was imported again since."""
+    wanted = set(version_ids)
+    rows = connection.execute(
+        "SELECT c.id, v.id, c.conversation_key, v.is_group FROM conversation_versions v "
+        "JOIN conversations c ON c.id = v.conversation_id ORDER BY c.id, v.id"
+    ).fetchall()
+    return [Selected(row[0], row[1], row[2], bool(row[3])) for row in rows if row[1] in wanted]
+
+
 def scope_fingerprint(selection: Sequence[Selected]) -> str:
     return sha256_hex(canonical_json(sorted([s.conversation_id, s.version_id] for s in selection)))
 

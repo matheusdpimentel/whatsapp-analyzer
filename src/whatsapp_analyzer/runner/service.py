@@ -38,6 +38,7 @@ from whatsapp_analyzer.runner.plan import (
     price_from_json,
     price_json,
     scope_fingerprint,
+    select_version_ids,
     select_versions,
 )
 from whatsapp_analyzer.store.db import transaction
@@ -58,6 +59,8 @@ class OpenRequest:
     force: bool = False
     retry_failed: bool = False
     resend_unknown: bool = False
+    # A fixed set of version ids (a review of another run) instead of the current versions
+    versions: tuple[int, ...] | None = None
     # Limits given explicitly on the command line. A resumed run keeps the limits it was
     # started with and changes only these, so a budget is never dropped by omission.
     limit_overrides: tuple[tuple[str, object], ...] = ()
@@ -87,7 +90,11 @@ def open_run(
     if request.run_id is not None:
         row = load_run(connection, request.run_id, config)
     else:
-        selection = select_versions(connection, request.keys)
+        selection = (
+            select_versions(connection, request.keys)
+            if request.versions is None
+            else select_version_ids(connection, request.versions)
+        )
         if not selection:
             raise NothingSelectedError
         row = None if request.force else find_run(connection, config, scope_fingerprint(selection))

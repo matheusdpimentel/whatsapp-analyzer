@@ -546,6 +546,7 @@ note = "Reservations use local token estimates: a conservative guide, not a guar
 run = "Run ID. Defaults to the run used most recently."
 
 [llm.status.row]
+cost_reviewer = "Known cost (reviewer, this run only)"
 status = "Status"
 tokens_reported = "Tokens reported by the provider (input / output)"
 tokens_estimated = "Tokens estimated locally (input / output)"
@@ -638,3 +639,44 @@ STRUCTURED_OUTPUT_UNDECLARED = "The model's structured output support is not dec
 CONTEXT_WINDOW_UNKNOWN = "The model's context window is unknown, so prompts are not checked against it."
 PRICE_MISSING = "No price is configured for this model: costs are unknown and --max-cost cannot be used. Add it to <workspace>/pricing.toml."
 PRICE_STALE = "The price entry for this model is more than 90 days old and may be outdated. Check the provider's pricing page and update <workspace>/pricing.toml."
+
+[llm.review]
+help = "Run the independent reviewer of [llm.review] over a finished primary run: every conversation (dual) or those selected by explicit criteria (selective). The reviewer never sees the primary classification. Real providers need --authorize-send for the reviewer's destination."
+nothing = "Nothing to review in run {run_id}: no conversation matches the review criteria."
+
+[llm.review.option]
+reselect = "Select the conversations again instead of reusing the scope of the earlier review of this primary run (metric levels or reconciliations may have changed)."
+primary_run = "The finished primary run to review (default: the latest run of the [llm] provider and model)."
+conversation = "Also review this conversation key (selective mode). Can be repeated."
+authorize_send = "Authorize sending prepared conversation content to the REVIEWER's destination (exactly its configured identity). Needed for every review that may send."
+
+[llm.review.error]
+PRIMARY_IS_A_REVIEW = "Run {run_id} is a review run: review a primary run instead."
+context_mismatch = "The current [llm.context] or [metrics] ignored_texts differ from those primary run {run_id} used: the reviewer would see other conversations."
+conversation_dual = "--conversation selects cases in selective mode; a dual review covers every conversation of the primary run."
+disabled = "No review is configured: [llm.review] mode is \"single\" or has no reviewer."
+same_as_primary = "The reviewer uses the same provider and model as the primary run: it would not be an independent analysis."
+PRIMARY_RUN_NOT_FOUND = "No finished primary run found (run {run_id}). Run 'llm run' first."
+PRIMARY_RUN_UNFINISHED = "Run {run_id} is {status}: finish it before reviewing, so the selection cannot change."
+REVIEW_NOT_FOUND = "No review found (primary run {primary_run}, review run {review_run}). Run 'llm review' first."
+
+[llm.review.hint]
+context_mismatch = "Restore the settings the primary run used, or run the primary model again with the current ones."
+disabled = "Set mode = \"selective\" or \"dual\" and the reviewer's provider and model in [llm.review] (docs/review.md)."
+same_as_primary = "Use another model (or provider) for the reviewer in [llm.review]."
+
+[llm.consolidate]
+costs = "Recorded cost: primary run {primary_run}: {primary}; reviewer run {review_run}: {reviewer} (- means unknown)."
+help = "Compare a primary run with its review per conversation and write a CSV with the consolidated label under a policy. Labels are never averaged; both runs stay unchanged."
+written = "Wrote {rows} rows ({reviewed} reviewed, {human} need human review) to {path}."
+
+[llm.consolidate.option]
+primary_run = "Consolidate the latest review of this primary run."
+review_run = "Consolidate this review run."
+policy = "require_agreement, prefer_primary, prefer_reviewer or human_review (default: [llm.review] policy)."
+
+[llm.consolidate.error]
+policy = "Unknown policy '{value}'. Choices: {choices}."
+
+[llm.review.render]
+header = "Review run {run_id} of primary run {primary_run}: the figures below are the reviewer's only."

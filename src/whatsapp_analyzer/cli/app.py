@@ -9,7 +9,7 @@ import typer
 
 from whatsapp_analyzer import __version__
 from whatsapp_analyzer.cli.argv import command_name, split_global_options
-from whatsapp_analyzer.cli.commands import llm, llm_run, metrics
+from whatsapp_analyzer.cli.commands import llm, llm_review, llm_run, metrics
 from whatsapp_analyzer.cli.commands.demo_data import demo_data
 from whatsapp_analyzer.cli.commands.doctor import doctor
 from whatsapp_analyzer.cli.commands.export import export
@@ -89,6 +89,8 @@ def build_app() -> typer.Typer:
     llm_app.command("prompts", help=t("llm.prompts.help"))(llm.prompts)
     llm_app.command("preview", help=t("llm.preview.help"))(llm.preview)
     llm_app.command("run", help=t("llm.run.help"))(llm_run.run)
+    llm_app.command("review", help=t("llm.review.help"))(llm_review.review)
+    llm_app.command("consolidate", help=t("llm.consolidate.help"))(llm_review.consolidate)
     llm_app.command("status", help=t("llm.status.help"))(llm_run.status)
     llm_app.command("export", help=t("llm.export.help"))(llm_run.export)
     app.add_typer(llm_app, name="llm")

@@ -18,7 +18,7 @@ silently corrected. Missing keys take the documented defaults.
 
 import re
 import tomllib
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from enum import StrEnum
@@ -127,6 +127,37 @@ class ConnectionSettings:
     timeout_seconds: float = 120.0
 
 
+class ReviewMode(StrEnum):
+    SINGLE = "single"  # only the primary model (the default)
+    SELECTIVE = "selective"  # a reviewer model classifies the cases the criteria select
+    DUAL = "dual"  # a reviewer model classifies every conversation of the primary run
+
+
+class ReviewCriterion(StrEnum):
+    REVIEW_REQUIRED = "review_required"  # the primary label is REVIEW_REQUIRED
+    UNLABELED = "unlabeled"  # the primary job has no valid label (failed, unknown, refused...)
+    METRIC_DISAGREEMENT = "metric_disagreement"  # primary label != deterministic metric level
+
+
+class ConsolidationPolicy(StrEnum):
+    REQUIRE_AGREEMENT = "require_agreement"  # a label only when both models agree
+    PREFER_PRIMARY = "prefer_primary"
+    PREFER_REVIEWER = "prefer_reviewer"
+    HUMAN_REVIEW = "human_review"  # every disagreement goes to a person
+
+
+@dataclass(frozen=True)
+class ReviewSettings:
+    """`[llm.review]`: an independent second model. The reviewer is a full LLM configuration
+    of its own (provider, model, key, options, limits), sharing only `[llm.context]` with the
+    primary model, so both classify exactly the same prepared conversations."""
+
+    mode: ReviewMode = ReviewMode.SINGLE
+    criteria: tuple[ReviewCriterion, ...] = (ReviewCriterion.REVIEW_REQUIRED,)
+    policy: ConsolidationPolicy = ConsolidationPolicy.HUMAN_REVIEW
+    reviewer: "LlmSettings | None" = None  # required unless mode is single
+
+
 @dataclass(frozen=True)
 class LlmSettings:
     provider: str = "fake"
@@ -139,6 +170,7 @@ class LlmSettings:
     options: tuple[tuple[str, OptionValue], ...] = ()
     context: ContextSettings = field(default_factory=ContextSettings)
     limits: LimitSettings = field(default_factory=LimitSettings)
+    review: ReviewSettings = field(default_factory=ReviewSettings)
 
 
 @dataclass(frozen=True)
@@ -219,6 +251,19 @@ requests_per_minute = 60
 max_attempts = 3            # per job, only for retries that are safe
 # max_tokens = 200000       # whole run, conservative local estimates
 # max_cost = "1.00"         # whole run; needs a complete price entry
+
+[llm.review]
+# Independent review by a second model (see docs/review.md). "single": no reviewer.
+# "selective": the reviewer classifies the cases selected by `criteria`; "dual": all of them.
+mode = "single"
+# criteria = ["review_required", "unlabeled", "metric_disagreement"]
+# policy = "human_review"   # require_agreement | prefer_primary | prefer_reviewer | human_review
+# provider = "anthropic"    # the reviewer: its own provider, model, key, options and limits
+# model = "claude-haiku-5-5"
+# [llm.review.connection]
+# api_key_env = "ANTHROPIC_API_KEY"
+# [llm.review.limits]
+# max_cost = "1.00"
 """
 
 
@@ -250,24 +295,24 @@ def parse_settings(data: dict[str, Any]) -> Settings:
     return Settings(metrics, scoring, llm)
 
 
-def _parse_llm(table: dict[str, Any]) -> LlmSettings:
-    path = "llm."
+_LLM_KEYS = {
+    "provider",
+    "model",
+    "prompt",
+    "max_output_tokens",
+    "temperature",
+    "connection",
+    "options",
+    "context",
+    "limits",
+}
+_REVIEW_KEYS = {"mode", "criteria", "policy"}
+_REVIEWER_KEYS = _LLM_KEYS - {"context"}
+
+
+def _parse_llm(table: dict[str, Any], path: str = "llm.") -> LlmSettings:
     defaults = LlmSettings()
-    _reject_unknown(
-        table,
-        {
-            "provider",
-            "model",
-            "prompt",
-            "max_output_tokens",
-            "temperature",
-            "connection",
-            "options",
-            "context",
-            "limits",
-        },
-        path,
-    )
+    _reject_unknown(table, _LLM_KEYS | ({"review"} if path == "llm." else set()), path)
     provider = table.get("provider", defaults.provider)
     supported = supported_providers()
     if provider not in supported:
@@ -296,7 +341,7 @@ def _parse_llm(table: dict[str, Any]) -> LlmSettings:
         ):
             if value is not None:
                 raise ConfigError("not_applicable", key=f"{path}{key}", provider=provider)
-    return LlmSettings(
+    settings = LlmSettings(
         provider=provider,
         model=table.get("model", defaults.model),
         prompt=table.get("prompt", defaults.prompt),
@@ -318,6 +363,9 @@ def _parse_llm(table: dict[str, Any]) -> LlmSettings:
         ),
         limits=_parse_limits(_table(table, "limits", path), f"{path}limits."),
     )
+    if path != "llm.":
+        return settings
+    return replace(settings, review=_parse_review(_table(table, "review", path), table))
 
 
 def supported_providers() -> tuple[str, ...]:
@@ -326,6 +374,51 @@ def supported_providers() -> tuple[str, ...]:
     from whatsapp_analyzer.llm.providers import REGISTRY  # noqa: PLC0415
 
     return ("fake", *REGISTRY)
+
+
+def _parse_review(table: dict[str, Any], primary: dict[str, Any]) -> ReviewSettings:
+    path = "llm.review."
+    _reject_unknown(table, _REVIEW_KEYS | _REVIEWER_KEYS, path)
+    defaults = ReviewSettings()
+    mode = _enum(table, "mode", path, ReviewMode, defaults.mode)
+    policy = _enum(table, "policy", path, ConsolidationPolicy, defaults.policy)
+    criteria = defaults.criteria
+    if "criteria" in table:
+        names = _strings(table, "criteria", path, ())
+        if not names:
+            raise ConfigError("wrong_type", key=f"{path}criteria", expected="non-empty list")
+        try:
+            criteria = tuple(dict.fromkeys(ReviewCriterion(name) for name in names))
+        except ValueError as exc:
+            choices = ", ".join(c.value for c in ReviewCriterion)
+            raise ConfigError("invalid_choice", key=f"{path}criteria", choices=choices) from exc
+    reviewer = None
+    reviewer_table = {k: v for k, v in table.items() if k in _REVIEWER_KEYS}
+    if mode is not ReviewMode.SINGLE:
+        for name in ("provider", "model"):
+            if name not in reviewer_table:
+                raise ConfigError("missing_key", key=f"{path}{name}")
+    if reviewer_table:
+        # The reviewer shares the primary context settings (the same prepared conversations)
+        # and, unless it sets its own, the primary prompt and limits.
+        merged = {
+            "context": primary.get("context", {}),
+            "prompt": primary.get("prompt", LlmSettings().prompt),
+            **reviewer_table,
+            # limit by limit: a reviewer that sets only its rate keeps the primary budgets
+            "limits": {**_table(primary, "limits", "llm."), **_table(table, "limits", path)},
+        }
+        reviewer = _parse_llm(merged, path)
+    return ReviewSettings(mode=mode, criteria=criteria, policy=policy, reviewer=reviewer)
+
+
+def _enum(table: dict[str, Any], name: str, path: str, kind: Any, default: Any) -> Any:
+    value = table.get(name, default.value)
+    try:
+        return kind(value)
+    except ValueError as exc:
+        choices = ", ".join(member.value for member in kind)
+        raise ConfigError("invalid_choice", key=f"{path}{name}", choices=choices) from exc
 
 
 def _parse_connection(table: dict[str, Any], path: str) -> ConnectionSettings:
