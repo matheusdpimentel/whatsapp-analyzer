@@ -130,6 +130,8 @@ def test_help_parsing_survives_forced_terminal_colors() -> None:
         [sys.executable, "-c", code], capture_output=True, text=True, env=env, check=False
     )
     assert proc.returncode == 0, proc.stderr
-    assert "\x1b[" in proc.stdout, "the forced-terminal environment no longer emits color codes"
-    assert "--authorize-send" not in proc.stdout, "raw output no longer splits option names"
+    if sys.platform != "win32":
+        # POSIX is where Rich emits the codes that split option names; Windows pipes get none.
+        assert "\x1b[" in proc.stdout, "the forced-terminal environment no longer emits codes"
+        assert "--authorize-send" not in proc.stdout, "raw output no longer splits option names"
     assert "--authorize-send" in ANSI.sub("", proc.stdout)
