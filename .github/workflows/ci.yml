@@ -55,8 +55,15 @@ jobs:
       - name: Install the wheel in a clean venv and run the quickstart check
         shell: bash
         run: |
-          uv venv "$RUNNER_TEMP/venv"
-          if [ -d "$RUNNER_TEMP/venv/Scripts" ]; then BIN="$RUNNER_TEMP/venv/Scripts"; else BIN="$RUNNER_TEMP/venv/bin"; fi
-          uv pip install --python "$BIN/python" dist/*.whl
+          VENV="$RUNNER_TEMP/venv"
+          uv venv "$VENV"
+          # Windows venvs keep their executables in Scripts/ and need the .exe suffix
+          # (uv does not resolve "Scripts/python"); POSIX uses bin/.
+          if [ -d "$VENV/Scripts" ]; then
+            PY="$VENV/Scripts/python.exe"; EXE="$VENV/Scripts/whatsapp-analyzer.exe"
+          else
+            PY="$VENV/bin/python"; EXE="$VENV/bin/whatsapp-analyzer"
+          fi
+          uv pip install --python "$PY" dist/*.whl
           cd "$RUNNER_TEMP"
-          "$BIN/python" "$GITHUB_WORKSPACE/scripts/check_quickstart.py" "$BIN/whatsapp-analyzer"
+          "$PY" "$GITHUB_WORKSPACE/scripts/check_quickstart.py" "$EXE"

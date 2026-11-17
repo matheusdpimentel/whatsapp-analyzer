@@ -1,8 +1,16 @@
+import sys
 from collections.abc import Iterator
 
 import pytest
 
+from helpers import socket_policy
 from whatsapp_analyzer.i18n import DEFAULT_LANGUAGE, LANGUAGE_ENV_VAR, set_language
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_configure(config: pytest.Config) -> None:
+    for name, value in socket_policy(sys.platform).items():
+        config.option.__dict__[name] = value
 
 
 @pytest.fixture(autouse=True)

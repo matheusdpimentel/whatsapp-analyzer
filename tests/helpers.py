@@ -83,3 +83,20 @@ def data_of(payload: dict[str, object]) -> dict[str, object]:
     data = payload["data"]
     assert isinstance(data, dict)
     return data
+
+
+LOOPBACK_HOSTS = "127.0.0.1,::1"
+
+
+def socket_policy(platform: str) -> dict[str, object]:
+    """How pytest-socket guards the network on `platform`.
+
+    Everywhere, tests may not reach any external host. On POSIX that is `--disable-socket`
+    (Unix sockets stay allowed for asyncio's self-pipe). On Windows asyncio's event loop
+    creates its self-pipe with `socket.socketpair()`, which is a TCP pair on 127.0.0.1, so
+    sockets cannot be disabled outright there: they are allowed, but a connection to anything
+    except the loopback addresses is still blocked.
+    """
+    if platform == "win32":
+        return {"disable_socket": False, "allow_hosts": LOOPBACK_HOSTS}
+    return {"disable_socket": True, "allow_hosts": None}

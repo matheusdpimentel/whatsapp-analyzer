@@ -7,6 +7,7 @@ path and only real options, so a renamed command or flag fails the suite.
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -26,13 +27,18 @@ GLOBAL_OPTIONS = {"--json", "--lang", "--version", "--help"}
 MAX_DEPTH = 3
 
 
+ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+
+
 def _help(capsys: pytest.CaptureFixture[str], *words: str) -> str | None:
     capsys.readouterr()
     try:
         code = main([*words, "--help"])
     except SystemExit as exit_:
         code = exit_.code if isinstance(exit_.code, int) else 1
-    out = capsys.readouterr().out
+    # Under GitHub Actions Typer forces terminal mode, and Rich then splits option names
+    # with color codes; compare the visible text.
+    out = ANSI.sub("", capsys.readouterr().out)
     return out if code == 0 else None
 
 
@@ -110,3 +116,20 @@ def test_readme_pre_release_install_commands_are_valid() -> None:
     assert (
         "uvx --from 'whatsapp-conversation-analyzer==1.0.0b1' whatsapp-analyzer --version" in docs
     )
+
+
+def test_help_parsing_survives_forced_terminal_colors() -> None:
+    """CI regression: under GITHUB_ACTIONS Typer forces terminal mode, and Rich splits option
+    names with color codes, so a plain substring search misses `--authorize-send`."""
+    code = (
+        "from whatsapp_analyzer.cli.app import main; "
+        "raise SystemExit(main(['llm', 'review', '--help']))"
+    )
+    env = {**os.environ, "GITHUB_ACTIONS": "true", "FORCE_COLOR": "1"}
+    proc = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, env=env, check=False
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "\x1b[" in proc.stdout, "the forced-terminal environment no longer emits color codes"
+    assert "--authorize-send" not in proc.stdout, "raw output no longer splits option names"
+    assert "--authorize-send" in ANSI.sub("", proc.stdout)
