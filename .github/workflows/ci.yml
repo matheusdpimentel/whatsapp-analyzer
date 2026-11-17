@@ -37,3 +37,26 @@ jobs:
       # pytest-socket blocks network access: tests must never reach a real provider.
       - run: uv run pytest
       - run: uv run whatsapp-analyzer --json doctor
+
+  package:
+    # The built wheel, installed in a clean environment outside the checkout, must run the
+    # whole documented workflow (synthetic data, offline fake provider).
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv build
+      - name: Install the wheel in a clean venv and run the quickstart check
+        shell: bash
+        run: |
+          uv venv "$RUNNER_TEMP/venv"
+          if [ -d "$RUNNER_TEMP/venv/Scripts" ]; then BIN="$RUNNER_TEMP/venv/Scripts"; else BIN="$RUNNER_TEMP/venv/bin"; fi
+          uv pip install --python "$BIN/python" dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$BIN/python" "$GITHUB_WORKSPACE/scripts/check_quickstart.py" "$BIN/whatsapp-analyzer"

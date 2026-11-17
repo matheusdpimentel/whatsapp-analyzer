@@ -1,0 +1,36 @@
+name: Release build
+
+# Builds and verifies the distribution when a version tag is pushed. It does NOT publish:
+# publishing to PyPI is a manual, maintainer-approved step (see docs/releasing.md).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - run: uv run pytest
+      - run: uv build
+      - name: Tag matches the package version
+        run: |
+          VERSION=$(uv run python -c "import whatsapp_analyzer as w; print(w.__version__)")
+          test "v$VERSION" = "${GITHUB_REF_NAME}"
+      - name: Install the wheel in a clean venv and run the quickstart check
+        run: |
+          uv venv "$RUNNER_TEMP/venv"
+          uv pip install --python "$RUNNER_TEMP/venv/bin/python" dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/venv/bin/python" "$GITHUB_WORKSPACE/scripts/check_quickstart.py" "$RUNNER_TEMP/venv/bin/whatsapp-analyzer"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/

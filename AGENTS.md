@@ -14,7 +14,8 @@ conversations with an LLM provider the user configures with their own key.
 - [docs/calibration.md](docs/calibration.md): human-reviewed examples, agreement reports, run comparison.
 - [docs/runner.md](docs/runner.md), [docs/llm.md](docs/llm.md), [docs/metrics.md](docs/metrics.md),
   [docs/input-formats.md](docs/input-formats.md), [docs/roadmap.md](docs/roadmap.md),
-  [docs/adr/](docs/adr/).
+  [docs/adr/](docs/adr/), [docs/benchmarks.md](docs/benchmarks.md),
+  [docs/releasing.md](docs/releasing.md), [CHANGELOG.md](CHANGELOG.md), [SECURITY.md](SECURITY.md).
 
 ## Rules
 
@@ -31,6 +32,7 @@ conversations with an LLM provider the user configures with their own key.
   `whatsapp-analyzer demo-data` for synthetic data. Ask before reading a real export.
 - Do not change `analyzer.toml`, `models.toml` or `pricing.toml` unless asked. `calibrate suggest`
   is exploratory and applies nothing; never apply its suggestions unasked.
+- Publishing (remote, tags, PyPI) needs the owner's explicit approval; never do it unasked.
 - `calibrate show` prints real message text on the terminal for the person labeling; do not
   copy that text into files, commits or prompts.
 
@@ -41,6 +43,7 @@ uv sync
 uv run pytest                     # offline: sockets are blocked, no paid calls
 uv run ruff check && uv run ruff format --check
 uv run mypy                       # strict
+uv run python scripts/check_quickstart.py "$(uv run which whatsapp-analyzer)"   # full synthetic workflow
 ```
 
 Code, CLI messages (English catalog), tests, docs and commit messages are in English; the

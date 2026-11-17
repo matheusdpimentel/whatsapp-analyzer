@@ -4,12 +4,17 @@ A local, terminal-based tool for processing, analyzing and classifying WhatsApp 
 exports. It computes deterministic engagement metrics and can optionally classify conversations
 with an LLM provider that you configure.
 
-> **Status: early development (milestone 7).** Conversations can be imported, validated and
-> stored in a local workspace; deterministic engagement metrics can be computed, compared and
-> exported; and LLM classification runs as a persistent, resumable, budgeted job with the
-> offline fake provider or a real provider (OpenAI, Anthropic or an OpenAI-compatible
-> endpoint) using your own key, optionally reviewed by a second model. See [`docs/roadmap.md`](docs/roadmap.md); architecture
-> decisions are recorded in [`docs/adr/`](docs/adr/).
+> **Status: 1.0 beta (`1.0.0b1`).** Everything below is implemented and tested; the
+> beta is for installation, documentation and compatibility feedback before `1.0.0`. WhatsApp's
+> own TXT export is **experimental** until validated with real exports. See
+> [`CHANGELOG.md`](CHANGELOG.md), [`docs/roadmap.md`](docs/roadmap.md) and the architecture
+> decisions in [`docs/adr/`](docs/adr/).
+
+What it does: imports conversation exports (iMazing TXT/CSV, WhatsApp TXT, CSV/XLSX with a
+mapping) into a local SQLite workspace, computes deterministic engagement metrics, optionally
+classifies conversations with an LLM (offline fake provider by default; OpenAI, Anthropic or an
+OpenAI-compatible endpoint with your own key), reviews them with a second model, and calibrates
+everything against human-reviewed examples.
 
 The tool is free and open source. There is no backend, account or subscription: with a real
 provider you bring your own key (BYOK) and the provider bills you directly. AI agents can
@@ -20,17 +25,44 @@ This project is not affiliated with, endorsed by, or sponsored by WhatsApp or Me
 
 ## Requirements
 
-- Python 3.11 or newer
-- [uv](https://docs.astral.sh/uv/) for development
+- Python 3.11 or newer (Linux, macOS and Windows are tested in CI).
+- No account and no network access, except for a real LLM provider you configure.
 
-## Installation (development)
+## Installation
 
 ```bash
-git clone <repository-url>
-cd whatsapp-conversation-analyzer
-uv sync
-uv run whatsapp-analyzer --help
+# From a built wheel or a checkout (works today):
+uv tool install ./whatsapp_conversation_analyzer-1.0.0b1-py3-none-any.whl   # or: pipx install ./whatsapp_conversation_analyzer-1.0.0b1-py3-none-any.whl
+uv tool install .                                                          # from a checkout
+
+# Optional provider SDKs (only if you will use a real provider):
+uv tool install --with openai --with anthropic .
 ```
+
+Once published to PyPI: `pipx install --pip-args='--pre' whatsapp-conversation-analyzer` (the pre-release
+flag is needed while it is a beta). Check the installation:
+
+```bash
+whatsapp-analyzer --version
+whatsapp-analyzer doctor
+```
+
+## Quickstart (synthetic data, offline, free)
+
+```bash
+whatsapp-analyzer demo-data ./demo --seed 7 --conversations 8       # invented conversations
+whatsapp-analyzer init ./analysis                                   # workspace
+whatsapp-analyzer import ./demo/conversations.csv -w ./analysis
+whatsapp-analyzer metrics run -w ./analysis                         # deterministic metrics
+whatsapp-analyzer llm run -w ./analysis                             # offline fake provider
+whatsapp-analyzer export -w ./analysis --out scores.csv             # + scores.csv.meta.json
+whatsapp-analyzer llm export -w ./analysis --out llm.csv
+```
+
+`python scripts/check_quickstart.py` runs the complete workflow (including review and
+calibration) against an installed `whatsapp-analyzer`; CI runs it on the built wheel installed
+outside the repository. For development from a checkout: `uv sync`, then prefix commands with
+`uv run`.
 
 ## Usage
 
@@ -206,7 +238,23 @@ Codes 5 to 8 and 12 are used by `llm run` (see [`docs/runner.md`](docs/runner.md
 covers invalid `analyzer.toml` files, missing or incompatible workspaces and provider
 configuration errors (missing key, unsupported option, invalid endpoint, ...).
 
+## Limitations
+
+- WhatsApp's own TXT export is experimental; iMazing and CSV/XLSX are the tested paths.
+- Group chats are `NOT_COMPARABLE` in the metrics.
+- Masking is best-effort pseudonymization, not anonymization.
+- Metrics describe observable activity, not interest, sentiment or personal attributes.
+- Performance figures for the synthetic benchmarks are in [`docs/benchmarks.md`](docs/benchmarks.md).
+
+## Future work
+
+A *Knowledge Builder* (source-cited, human-reviewed knowledge for agents) and MCP access are
+only proposals, documented in [`docs/roadmap.md`](docs/roadmap.md). Neither is implemented.
+
 ## Development
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md) and
+[`docs/releasing.md`](docs/releasing.md).
 
 ```bash
 uv run pytest            # tests (network access is blocked; no paid calls, see tests/live/)

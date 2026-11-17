@@ -900,7 +900,7 @@ wheels = [
 
 [[package]]
 name = "whatsapp-conversation-analyzer"
-version = "0.1.0.dev0"
+version = "1.0.0b1"
 source = { editable = "." }
 dependencies = [
     { name = "openpyxl" },

@@ -11,6 +11,7 @@
 | M6 | Real providers (OpenAI, Anthropic, OpenAI-compatible), BYOK, authorization, agent guide | done |
 | M7 | Independent review (single, selective, dual) and categorical consolidation ([review.md](review.md)) | done |
 | M8 | Calibration with human-reviewed examples ([calibration.md](calibration.md)) | done |
+| M9 | Release readiness for 1.0: clean install, reproducible demo, docs, benchmarks, security checks ([releasing.md](releasing.md)); no new features | done (beta `1.0.0b1`) |
 | Future | Knowledge Builder (proposal below, not implemented) | proposed |
 
 ## M7: configurable reviewers
@@ -70,6 +71,14 @@ examples measure agreement, compare runs and report where models and metrics dis
 added: the four policies are evaluated as they are. Exit code 10 (`CALIBRATION_REQUIRED`)
 means too few human labels.
 
+## M9: release readiness
+
+Implemented in milestone 9 without new features: version `1.0.0b1`, installation from the
+built wheel verified outside the repository (`scripts/check_quickstart.py`, CI `package`
+job), tests that execute the documented commands and guard against real data, benchmarks
+([benchmarks.md](benchmarks.md)), `SECURITY.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and
+[releasing.md](releasing.md). Publishing is manual and owner-approved.
+
 ## Proposal: Knowledge Builder (not implemented)
 
 An optional, later module that turns conversation histories into structured knowledge for
@@ -85,3 +94,6 @@ Principles, to be designed before any code:
 - Privacy controls: masking, exclusion lists, retention limits, export and deletion of every
   item about a person; no sensitive or protected attributes inferred.
 - Built on the existing runner, budgets and consolidation; no new hosting or backend.
+
+An MCP server for agents is likewise only an idea at this stage: today agents use the CLI
+with `--json` ([agent-usage.md](agent-usage.md)). No design or code exists.
